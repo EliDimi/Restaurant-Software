@@ -31,8 +31,8 @@ void startingMessages(char& role) {
     }
 }
 
-void readAndPrintMenu(const char* Menu) {
-    ifstream file(Menu);
+void readAndPrintFile(const char* List) {
+    ifstream file(List);
     if (!file.is_open()) {
         cout << "Error: Unable to open file." << endl;
         return;
@@ -47,7 +47,7 @@ void readAndPrintMenu(const char* Menu) {
 
     file.getline(fileContent, fileSize, '\0');
 
-    cout << "The menu is: " << endl;
+    cout << "The content is: " << endl;
     cout << fileContent << endl;
     cout << endl;
 
@@ -58,7 +58,12 @@ void readAndPrintMenu(const char* Menu) {
 
 void seeMenu() {
     const char* menu = "Menu.txt";
-    readAndPrintMenu(menu);
+    readAndPrintFile(menu);
+}
+
+void seeProductsLeft() {
+    const char* warehouse = "Warehouse.txt";
+    readAndPrintFile(warehouse);
 }
 
 void printOptionsForManager() {
@@ -114,7 +119,7 @@ void printOptionsForManager() {
             // seePastOrdersList();
             break;
         case 6:
-            // seeProductsLeft();
+            seeProductsLeft();
             break;
         case 7:
             // writeOffProduct();
