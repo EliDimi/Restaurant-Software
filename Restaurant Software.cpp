@@ -2,9 +2,20 @@
 #include <fstream>
 using namespace std;
 
+const int MAXSIZE = 100;
+
 void clearConsole() {
     cout << "\033[;H"; // Moves cursor to the top left
     cout << "\033[J"; // Clears the console
+}
+
+void clearInputBuffer() {
+    // because of using both getline and cin we have to cin.ignore;
+    // cin leaves the newline character in the stream which will be read as input from the getline
+
+    cin.clear();	// clears errors flags from the cin
+    cin.sync();		// discard unread characters from the input buffer
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');	// discard characters from the input buffer
 }
 
 void startingMessages(char& role) {
@@ -66,6 +77,19 @@ void seeProductsLeft() {
     readAndPrintFile(warehouse);
 }
 
+void makeOrder() {
+    char orderName[MAXSIZE];
+    cout << "Add order's name: ";
+    cin.getline(orderName, MAXSIZE);
+    clearInputBuffer();
+
+    int quantity = 0;
+    cout << "How many: ";
+    cin >> quantity;
+    clearInputBuffer();
+
+}
+
 void printOptionsForManager() {
     while (true) {
         cout << "Select an option:" << endl;
@@ -92,7 +116,11 @@ void printOptionsForManager() {
             cout << "Choosing: ";
             cin >> option;
 
-            if (option < 1 || option > 15) {
+            if (cin.fail()) { 
+                cin.clear(); 
+                cin.ignore();
+                cout << "Invalid input! Please enter a number." << endl;
+            } else if (option < 1 || option > 15) {
                 cout << "Invalid option! Select again!" << endl;
             }
             else {
@@ -105,9 +133,9 @@ void printOptionsForManager() {
         switch (option) {
         case 1:
             seeMenu();
-
+            break;
         case 2:
-            // makeOrder();
+            makeOrder();
             break;
         case 3:
             // removeOrder();
@@ -170,7 +198,12 @@ void printOptionsForWaiter() {
             cout << "Choosing: ";
             cin >> option;
 
-            if (option < 1 || option > 8) {
+            if (cin.fail()) {
+                cin.clear();
+                cin.ignore();
+                cout << "Invalid input! Please enter a number." << endl;
+            }
+            else if (option < 1 || option > 15) {
                 cout << "Invalid option! Select again!" << endl;
             }
             else {
@@ -185,7 +218,7 @@ void printOptionsForWaiter() {
             seeMenu();
             break;
         case 2:
-            //makeOrder();
+            makeOrder();
             break;
         case 3:
             //removeOrder();
