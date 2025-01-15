@@ -1,0 +1,12 @@
+Shopska salad tomatoes50,cucumbers50,white cheese25
+Carrot salad carrots100
+French fries potatoes100
+Chicken wings chicken wings5
+Rise with vegetables rise150,pees25,corn25,carrots25
+Pasta Bolognese pasta150,tomatoes70
+Chocolate cake cake1
+Ice cream ice cream1
+Coca-Cola coca-cola1
+Sprite sprite1
+Beer beer1
+Wine wine1
