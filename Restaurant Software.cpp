@@ -77,6 +77,44 @@ void seeProductsLeft() {
     readAndPrintFile(warehouse);
 }
 
+void removeProductsFromWarehouse(char* orderName, int quantity) {
+    const char* recipe = "Recipes.txt";
+    ifstream recipeFile(recipe);
+    if (!recipeFile.is_open()) {
+        cout << "Error: Unable to open file." << endl;
+        return;
+    }
+
+    recipeFile.seekg(0, ios::end);
+    size_t recipeFileSize = recipeFile.tellg();
+    recipeFile.seekg(0, ios::beg);
+    recipeFile.clear();
+
+    char* recipeContent = new char[recipeFileSize + 1];
+
+    recipeFile.getline(recipeContent, recipeFileSize, '\0');
+    recipeFile.close();
+    
+    const char* warehouse = "Warehouse.txt";
+    ifstream warehouseFile(warehouse);
+    if (!warehouseFile.is_open()) {
+        cout << "Error: Unable to open file." << endl;
+        return;
+    }
+
+    warehouseFile.seekg(0, ios::end);
+    size_t warehouseFileSize = warehouseFile.tellg();
+    warehouseFile.seekg(0, ios::beg);
+    warehouseFile.clear();
+
+    char* warehouseContent = new char[warehouseFileSize + 1];
+
+    warehouseFile.getline(warehouseContent, warehouseFileSize, '\0');
+    warehouseFile.close();
+
+
+}
+
 void makeOrder() {
     char orderName[MAXSIZE];
     cout << "Add order's name: ";
@@ -88,6 +126,7 @@ void makeOrder() {
     cin >> quantity;
     clearInputBuffer();
 
+    removeProductsFromWarehouse(orderName, quantity);
 }
 
 void printOptionsForManager() {
@@ -99,7 +138,7 @@ void printOptionsForManager() {
         cout << "4) See past orders" << endl;
         cout << "5) See past oders list" << endl;
         cout << "6) See how much products are left" << endl;
-        cout << "7) Write- off a product" << endl;
+        cout << "7) Write-off a product" << endl;
         cout << "8) Stock a product" << endl;
         cout << "9) See daily revenue" << endl;
         cout << "10) Generate a daily revenue" << endl;
