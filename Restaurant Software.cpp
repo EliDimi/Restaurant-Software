@@ -35,7 +35,35 @@ void copyString(char* destination, const char* source) {
         destination[i] = source[i];
         i++;
     }
-    destination[i] = '\0'; // ?????????? ??? ?????? ?? ???? ?? ??????
+    destination[i] = '\0';
+}
+
+void parseWarehouseLine(const char* line, char* product, int& quantity, char* unit) {
+    int i = 0, j = 0;
+    while (line[i] != '\0') {
+        if (line[i] >= '0' && line[i] <= '9') { 
+            product[j] = '\0'; 
+            break;
+        }
+        product[j++] = line[i++];
+    }
+    product[j - 1] = '\0';
+
+    quantity = 0;
+    while (line[i] >= '0' && line[i] <= '9') {
+        quantity = quantity * 10 + (line[i] - '0');
+        i++;
+    }
+
+    while (line[i] == ' ') {
+        i++;
+    }
+
+    j = 0;
+    while (line[i] != '\0') {
+        unit[j++] = line[i++];
+    }
+    unit[j] = '\0';
 }
 
 void startingMessages(char& role) {
@@ -152,33 +180,33 @@ void makeOrder() {
     removeProductsFromWarehouse(orderName, quantity);
 }
 
-void writeOffProduct(){
+void writeOffProduct() {
     char productName[MAXSIZE];
     cout << "Product to be removed: ";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.getline(productName, MAXSIZE);
     clearInputBuffer();
 
     const char* warehouseFileName = "Warehouse.txt";
 
-    // ?????? ?? ??????
     ifstream warehouseFile(warehouseFileName);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file." << endl;
         return;
     }
 
-    char products[MAXSIZE][20];
+    char products[MAXSIZE][MAXSIZE];
     int stock[MAXSIZE];
-    char unit[MAXSIZE][20]; // ?? ?????????? ?? ????????? (grams, slices, servings)
+    char unit[MAXSIZE][MAXSIZE];
     int productCount = 0;
 
-    // ?????? ?? ????? ??? ?? ?????
-    while (warehouseFile >> products[productCount] >> stock[productCount] >> unit[productCount]) {
+    char line[MAXSIZE];
+    while (warehouseFile.getline(line, MAXSIZE)) {
+        parseWarehouseLine(line, products[productCount], stock[productCount], unit[productCount]);
         productCount++;
     }
     warehouseFile.close();
 
-    // ??????? ?? ????????, ????? ?????? ?? ???? ?????????
     bool productFound = false;
     int removeIndex = -1;
 
@@ -189,13 +217,11 @@ void writeOffProduct(){
             break;
         }
     }
-
     if (!productFound) {
         cout << "Product not found in the warehouse!" << endl;
         return;
     }
 
-    // ?????????? ?? ???????? (?????????? ?? ?????????? ? ????????)
     for (int i = removeIndex; i < productCount - 1; i++) {
         copyString(products[i], products[i + 1]);
         stock[i] = stock[i + 1];
@@ -203,7 +229,6 @@ void writeOffProduct(){
     }
     productCount--;
 
-    // ????? ??????? ? ??????
     ofstream warehouseOut(warehouseFileName);
     if (!warehouseOut.is_open()) {
         cout << "Error: Unable to open warehouse file for writing." << endl;
