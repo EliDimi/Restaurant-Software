@@ -2,7 +2,7 @@
 #include <fstream>
 using namespace std;
 
-const int MAXSIZE = 1024;
+const int MAXSIZE = 100;
 
 void clearConsole() {
     cout << "\033[;H"; // Moves cursor to the top left
@@ -141,6 +141,15 @@ void seeProductsLeft() {
     readAndPrintFile(warehouse);
 }
 
+bool dishFound(const char* dish) {
+    const char* menuFileName = "Menu.txt";
+    ifstream menuFile(menuFileName);
+    if (!menuFile.is_open()) {
+        cout << "Error: Unable to open menu file." << endl;
+        return;
+    }
+}
+
 void removeProductsFromWarehouse(char* orderName, int quantity) {
     const char* recipe = "Recipes.txt";
     ifstream recipeFile(recipe);
@@ -192,6 +201,8 @@ void makeOrder() {
     cout << "How many: ";
     cin >> quantity;
     clearInputBuffer();
+
+    bool dishFound(orderName);
 
     removeProductsFromWarehouse(orderName, quantity);
 }
@@ -259,17 +270,16 @@ void writeOffProduct() {
     cout << "Product \"" << productName << "\" removed from the warehouse successfully!" << endl;
 
     deallocateMemory(products, MAXSIZE);
-    delete[] unit;
-    unit = nullptr;
     deallocateMemory(unit, MAXSIZE);
+    delete[] stock;
     delete[] line;
-    line = nullptr;
 }
 
 void stockProduct() {
     char productToAdd[MAXSIZE];
     cout << "Format: 'product name*space*quintity*space*unit'" << endl;
     cout << "Enter product to be added: ";
+    cin.ignore();
     cin.getline(productToAdd, MAXSIZE);
     clearInputBuffer();
 
@@ -327,11 +337,9 @@ void stockProduct() {
     cout << "Product \"" << product << "\" updated successfully in the warehouse!" << endl;
 
     deallocateMemory(productInWarehouse, MAXSIZE);
-    delete[] stockInWarehouse;
-    unitInWarehouse = nullptr;
     deallocateMemory(unitInWarehouse, MAXSIZE);
+    delete[] stockInWarehouse;
     delete[] line;
-    line = nullptr;
 }
 
 void printOptionsForManager() {
@@ -379,7 +387,7 @@ void printOptionsForManager() {
             seeMenu();
             break;
         case 2:
-            //makeOrder();
+            makeOrder();
             break;
         case 3:
             // removeOrder();
