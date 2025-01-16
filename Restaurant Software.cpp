@@ -141,13 +141,33 @@ void seeProductsLeft() {
     readAndPrintFile(warehouse);
 }
 
-bool dishFound(const char* dish) {
-    const char* menuFileName = "Menu.txt";
-    ifstream menuFile(menuFileName);
-    if (!menuFile.is_open()) {
-        cout << "Error: Unable to open menu file." << endl;
-        return;
+bool findWordInFile(const char* word, const char* fileName) {
+    ifstream file(fileName);
+    if (!file.is_open()) {
+        cout << "Error: Unable to open file: " << fileName << endl;
+        return false;
     }
+
+    char line[MAXSIZE];
+    char dishName[MAXSIZE];
+    while (file.getline(line, MAXSIZE)) {
+        int i = 0, j = 0;
+        while (line[i] != '\0') {
+            if (line[i] >= '0' && line[i] <= '9') {
+                dishName[j] = '\0';
+                break;
+            }
+            dishName[j++] = line[i++];
+        }
+        dishName[j - 1] = '\0';
+
+        if (compareStrings(dishName, word)) {
+            file.close();
+            return true;
+        }
+    }
+    file.close();
+    return false;
 }
 
 void removeProductsFromWarehouse(char* orderName, int quantity) {
@@ -194,6 +214,7 @@ void removeProductsFromWarehouse(char* orderName, int quantity) {
 void makeOrder() {
     char orderName[MAXSIZE];
     cout << "Add order's name: ";
+    cin.ignore();
     cin.getline(orderName, MAXSIZE);
     clearInputBuffer();
 
@@ -202,8 +223,20 @@ void makeOrder() {
     cin >> quantity;
     clearInputBuffer();
 
-    bool dishFound(orderName);
+    const char* menuFileName = "Menu.txt";
+    bool dishIsFound = findWordInFile(orderName, menuFileName);
+    if (!dishIsFound) {
+        cout << "Error: Dish not found in the menu!" << endl;
+        return;
+    }
+    const char* recipeFileName = "Recipes.txt";
+    bool recipeIsFound = findWordInFile(orderName, recipeFileName);
+    if (!recipeIsFound) {
+        cout << "Error: Recipe not found!" << endl;
+        return;
+    }
 
+    cout << "Success" << endl;
     removeProductsFromWarehouse(orderName, quantity);
 }
 
