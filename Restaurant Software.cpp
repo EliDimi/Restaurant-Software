@@ -2,7 +2,7 @@
 #include <fstream>
 using namespace std;
 
-const int MAXSIZE = 100;
+const int MAXSIZE = 1024;
 
 void clearConsole() {
     cout << "\033[;H"; // Moves cursor to the top left
@@ -17,6 +17,22 @@ void clearInputBuffer() {
     cin.sync();		// discard unread characters from the input buffer
     cin.ignore(numeric_limits<streamsize>::max(), '\n');	// discard characters from the input buffer
 }
+
+ char** allocateMemory(int N, int M) {
+     char** matrix = new char*[N];
+     for (int i = 0; i < N; i++) {
+         matrix[i] = new char[M];
+     }
+     return matrix;
+ }
+
+ void deallocateMemory(char** matrix, int N) {
+     for (int i = 0; i < N; i++) {
+         delete[] matrix[i];
+     }
+     delete[] matrix;
+     matrix = nullptr;
+ }
 
 bool compareStrings(const char* str1, const char* str2) {
     int i = 0;
@@ -195,12 +211,12 @@ void writeOffProduct() {
         return;
     }
 
-    char products[MAXSIZE][MAXSIZE];
-    int stock[MAXSIZE];
-    char unit[MAXSIZE][MAXSIZE];
+    char** products = allocateMemory(MAXSIZE, MAXSIZE);
+    int* stock = new int[MAXSIZE];
+    char** unit = allocateMemory(MAXSIZE, MAXSIZE);
     int productCount = 0;
+    char* line = new char[MAXSIZE];
 
-    char line[MAXSIZE];
     while (warehouseFile.getline(line, MAXSIZE)) {
         processWarehouseLine(line, products[productCount], stock[productCount], unit[productCount]);
         productCount++;
@@ -229,7 +245,7 @@ void writeOffProduct() {
     }
     productCount--;
 
-    ofstream warehouseOut(warehouseFileName);
+    ofstream warehouseOut(warehouseFileName, ios::trunc);
     if (!warehouseOut.is_open()) {
         cout << "Error: Unable to open warehouse file for writing." << endl;
         return;
@@ -241,11 +257,19 @@ void writeOffProduct() {
     warehouseOut.close();
 
     cout << "Product \"" << productName << "\" removed from the warehouse successfully!" << endl;
+
+    deallocateMemory(products, MAXSIZE);
+    delete[] unit;
+    unit = nullptr;
+    deallocateMemory(unit, MAXSIZE);
+    delete[] line;
+    line = nullptr;
 }
 
 void stockProduct() {
     char productToAdd[MAXSIZE];
-    cout << "Enter product to be added in format 'product name*space*quintity*space*unit': ";
+    cout << "Format: 'product name*space*quintity*space*unit'" << endl;
+    cout << "Enter product to be added: ";
     cin.getline(productToAdd, MAXSIZE);
     clearInputBuffer();
 
@@ -262,11 +286,11 @@ void stockProduct() {
         return;
     }
     
-    char productInWarehouse[MAXSIZE][MAXSIZE];
-    int stockInWarehouse[MAXSIZE];
-    char unitInWarehouse[MAXSIZE][MAXSIZE];
+    char** productInWarehouse = allocateMemory(MAXSIZE, MAXSIZE);
+    int* stockInWarehouse = new int[MAXSIZE];
+    char** unitInWarehouse = allocateMemory(MAXSIZE, MAXSIZE);
     int productCount = 0;
-    char line[MAXSIZE];
+    char* line = new char[MAXSIZE];
 
     while (warehouseFile.getline(line, MAXSIZE)) {
         processWarehouseLine(line, productInWarehouse[productCount], stockInWarehouse[productCount], unitInWarehouse[productCount]);
@@ -301,6 +325,13 @@ void stockProduct() {
     warehouseOut.close();
 
     cout << "Product \"" << product << "\" updated successfully in the warehouse!" << endl;
+
+    deallocateMemory(productInWarehouse, MAXSIZE);
+    delete[] stockInWarehouse;
+    unitInWarehouse = nullptr;
+    deallocateMemory(unitInWarehouse, MAXSIZE);
+    delete[] line;
+    line = nullptr;
 }
 
 void printOptionsForManager() {
