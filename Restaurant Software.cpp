@@ -214,7 +214,6 @@ void readAndPrintFile(const char* List) {
 
     file.getline(fileContent, fileSize, '\0');
 
-    cout << "The content is: " << endl;
     cout << fileContent << endl;
     cout << endl;
 
@@ -510,6 +509,11 @@ void cancelOrder() {
 
 }
 
+void seePastOrders() {
+    const char* pastOrders = "Past orders.txt";
+    readAndPrintFile(pastOrders);
+}
+
 void writeOffProduct() {
     char productName[MAXSIZE];
     cout << "Product to be removed: ";
@@ -639,7 +643,7 @@ void printOptionsForManager() {
         cout << "2) Make an order" << endl;
         cout << "3) Cancel an order" << endl;
         cout << "4) See past orders" << endl;
-        cout << "5) See past oders list" << endl;
+        cout << "5) See past orders list" << endl;
         cout << "6) See how much products are left" << endl;
         cout << "7) Write-off a product" << endl;
         cout << "8) Stock a product" << endl;
@@ -683,7 +687,7 @@ void printOptionsForManager() {
             cancelOrder();
             break;
         case 4:
-            // seePastOrders();
+            seePastOrders();
             break;
         case 5:
             // seePastOrdersList();
@@ -766,7 +770,7 @@ void printOptionsForWaiter() {
             cancelOrder();
             break;
         case 4:
-            //seePastOrders();
+            seePastOrders();
             break;
         case 5:
             //seePastOrdersList();
