@@ -517,6 +517,32 @@ void saveOrderToFile(const char* orderName, const int quantity) {
     cout << "Order done!" << endl;
 }
 
+void saveDishToFile(const char* dish, const char* price) {
+    const char* ordersFileName("Menu.txt");
+    ofstream ordersFile(ordersFileName, ios::app);
+    if (!ordersFile.is_open()) {
+        cout << "Error: Unable to open orders file for writing!" << endl;
+        return;
+    }
+    ordersFile << dish << " " << price << endl;
+    ordersFile.close();
+
+    cout << "Dish is added!" << endl;
+}
+
+void saveRecipeToFile(const char* recipe) {
+    const char* ordersFileName("Recipes.txt");
+    ofstream ordersFile(ordersFileName, ios::app);
+    if (!ordersFile.is_open()) {
+        cout << "Error: Unable to open orders file for writing!" << endl;
+        return;
+    }
+    ordersFile << recipe << endl;
+    ordersFile.close();
+
+    cout << "Recipe is added!" << endl;
+}
+
 void makeOrder() {
     char orderName[MAXSIZE];
     cout << "Add order's name: ";
@@ -724,6 +750,36 @@ void stockProduct() {
     delete[] line;
 }
 
+void seeDailyRevenue() {
+
+}
+
+void addNewItem() {
+    char dish[MAXSIZE];
+    char price[MAXSIZE];
+    cout << "What new dish do you want to add: ";
+    cin.ignore();
+    cin.getline(dish, MAXSIZE);
+    clearInputBuffer();
+    cout << "Choose price: ";
+    cin.getline(price, MAXSIZE);
+    clearInputBuffer();
+
+    saveDishToFile(dish, price);
+
+    char recipe[MAXSIZE];
+    cout << endl;
+    cout << "Write recipe for the cookbook: ";
+    cin.getline(recipe, MAXSIZE);
+    clearInputBuffer();
+    saveRecipeToFile(recipe);
+
+    cout << "***" << endl;
+    cout << "Do not forget to order ingredients for the new dish!" << endl;
+    cout << "***" << endl;
+
+}
+
 void printOptionsForManager() {
     while (true) {
         cout << "Select an option:" << endl;
@@ -790,7 +846,7 @@ void printOptionsForManager() {
             stockProduct();
             break;
         case 9:
-            // seeDailyRevenue();
+            //seeDailyRevenue();
             break;
         case 10:
             // generateDailyRevenue();
@@ -799,14 +855,13 @@ void printOptionsForManager() {
             // seeAllRevenues();
             break;
         case 12:
-            // addNewItem();
+            addNewItem();
             break;
         case 13:
             // removeItemFromMenu();
             break;
         case 14:
-            printOptionsForManager();
-            break;
+            continue;
         case 15:
             return;
         }
