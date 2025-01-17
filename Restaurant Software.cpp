@@ -298,6 +298,19 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
     return true;
 }
 
+void saveOrderToFile(const char* orderName, const int quantity) {
+    const char* ordersFileName("Past Orders.txt");
+    ofstream ordersFile(ordersFileName, ios::app);
+    if (!ordersFile.is_open()) {
+        cout << "Error: Unable to open orders file for writing!" << endl;
+        return;
+    }
+    ordersFile << orderName << " " << quantity << endl;
+    ordersFile.close();
+
+    cout << "Order done!" << endl;
+}
+
 void makeOrder() {
     char orderName[MAXSIZE];
     cout << "Add order's name: ";
@@ -333,8 +346,10 @@ void makeOrder() {
         cout << "Order cannot be completed due to insufficient ingredients." << endl;
     }
     else {
-        cout << "Order successfully processed!" << endl;
+        cout << "Order is cooking...!" << endl;
     }
+
+    saveOrderToFile(orderName, quantity);
 
     deallocateMemory(productsFromRecipe, MAXSIZE);
     delete[] quantitiesFromRecipe;
