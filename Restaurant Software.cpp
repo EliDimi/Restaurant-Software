@@ -291,9 +291,26 @@ void sortPastOrders() {
     delete[] sortedQuantities;
 }
 
+void findDate(const char* revenuesFile, char* date) {
+    ifstream file(revenuesFile);
+    if (!file.is_open()) {
+        cout << "Error: Unable to open file: " << revenuesFile << endl;
+        return;
+    }
+    char line[MAXSIZE];
+    while (file.getline(line, MAXSIZE)) {
+        copyString(date, line);
+    }
+
+    file.close();
+}
+
 void startingMessages(char& role) {
+    const char* revenuesFileName = "Revenues.txt";
+    char date[MAXSIZE];
+    findDate(revenuesFileName, date);
     cout << "Welcome!" << endl;
-    cout << "Today is 01.01.2025" << endl;
+    cout << "Today is " << date << endl;
     cout << "Please select an option:" << endl;
     cout << "A - Manager or B - Waiter" << endl;
     while (true) {
