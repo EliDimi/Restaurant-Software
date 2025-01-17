@@ -18,10 +18,10 @@ void clearInputBuffer() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');	// discard characters from the input buffer
 }
 
- char** allocateMemory(int N, int M) {
+ char** allocateMemory(int N) {
      char** matrix = new char*[N];
      for (int i = 0; i < N; i++) {
-         matrix[i] = new char[M];
+         matrix[i] = new char[N];
      }
      return matrix;
  }
@@ -170,6 +170,55 @@ bool findWordInFile(const char* word, const char* fileName) {
     return false;
 }
 
+void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, int* quantities, int& productCount) {
+    const char* recipeFileName = "Recipes.txt";
+    ifstream recipeFile(recipeFileName);
+    if (!recipeFile.is_open()) {
+        cout << "Error: Unable to open recipe file." << endl;
+        return;
+    }
+
+    char line [MAXSIZE];
+    while (recipeFile.getline(line, MAXSIZE)) {
+        char dishFound[MAXSIZE];
+        int i = 0, j = 0;
+
+        while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
+            dishFound[j++] = line[i++];
+        }
+        dishFound[j - 1] = '\0';
+
+        if (!compareStrings(dishFound, orderName)) {
+            continue;
+        }
+
+        while (line[i] != '\0') {
+            while (line[i] == ' ') {
+                i++;
+            }
+
+            quantities[productCount] = 0;
+            while (line[i] >= '0' && line[i] <= '9') {
+                quantities[productCount] *= 10 + (line[i] - '0');
+                i++;
+            }
+
+            while (line[i] == ' ') {
+                i++;
+            }
+
+            j = 0;
+            while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
+                productsFromRecipe[productCount][j++] = line[i++];
+            }
+            productsFromRecipe[productCount][j - 1] = '\0';
+            productCount++;
+        }
+        break;
+    }
+    recipeFile.close();
+}
+
 void removeProductsFromWarehouse(char* orderName, int quantity) {
     const char* recipe = "Recipes.txt";
     ifstream recipeFile(recipe);
@@ -236,6 +285,13 @@ void makeOrder() {
         return;
     }
 
+    char** productsFromRecipe = allocateMemory(MAXSIZE);
+    int* quantitiesFromRecipe = new int[MAXSIZE];
+    int productCount = 0;
+
+    extractRecipeIngredients(orderName, productsFromRecipe, quantitiesFromRecipe, productCount);
+
+
     cout << "Success" << endl;
     removeProductsFromWarehouse(orderName, quantity);
 }
@@ -255,9 +311,9 @@ void writeOffProduct() {
         return;
     }
 
-    char** products = allocateMemory(MAXSIZE, MAXSIZE);
+    char** products = allocateMemory(MAXSIZE);
     int* stock = new int[MAXSIZE];
-    char** unit = allocateMemory(MAXSIZE, MAXSIZE);
+    char** unit = allocateMemory(MAXSIZE);
     int productCount = 0;
     char* line = new char[MAXSIZE];
 
@@ -329,9 +385,9 @@ void stockProduct() {
         return;
     }
     
-    char** productInWarehouse = allocateMemory(MAXSIZE, MAXSIZE);
+    char** productInWarehouse = allocateMemory(MAXSIZE);
     int* stockInWarehouse = new int[MAXSIZE];
-    char** unitInWarehouse = allocateMemory(MAXSIZE, MAXSIZE);
+    char** unitInWarehouse = allocateMemory(MAXSIZE);
     int productCount = 0;
     char* line = new char[MAXSIZE];
 
