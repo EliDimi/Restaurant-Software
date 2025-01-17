@@ -82,8 +82,7 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     unit[j] = '\0';
 }
 
-void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) {
-    const char* ordersFileName = "Past orders.txt";
+void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount, const char* ordersFileName) {
     ifstream ordersFile(ordersFileName);
     if (!ordersFile.is_open()) {
         cout << "Error: Unable to open orders file!" << endl;
@@ -110,12 +109,48 @@ void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) 
     }
 }
 
+int findPriceInMenu(const char* dish, const char* menuFileName) {
+    ifstream menuFile(menuFileName);
+    if (!menuFile.is_open()) {
+        cout << "Error: Unable to open menu file!" << endl;
+        return -1;
+    }
+
+    char line[MAXSIZE];
+    char menuDish[MAXSIZE];
+    int price;
+
+    while (menuFile.getline(line, MAXSIZE)) {
+        int i = 0, j = 0;
+
+        while (!(line[i] >= '0' && line[i] <= '9')) {
+            menuDish[j++] = line[i++];
+        }
+        menuDish[j - 1] = '\0';
+
+        int price = 0;
+        while (line[i] >= '0' && line[i] <= '9') {
+            price = price * 10 + (line[i] - '0');
+            i++;
+        }
+
+        if (compareStrings(menuDish, dish)) {
+            menuFile.close();
+            return price;
+        }
+    }
+
+    menuFile.close();
+    return -1;
+}
+
 bool updateOrdersFile(const char* orderName, int quantity) {
     char** orders = allocateMemory(MAXSIZE);
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    processPastOrderLine(orders, orderQuantities, orderCount);
+    const char* ordersFileName = "Past orders.txt";
+    processPastOrderLine(orders, orderQuantities, orderCount, ordersFileName);
 
     for (int i = orderCount - 1; i >= 0; i--) {
         if (compareStrings(orders[i], orderName)) {
@@ -139,7 +174,6 @@ bool updateOrdersFile(const char* orderName, int quantity) {
         }
     }
 
-    const char* ordersFileName = "Past orders.txt";
     ofstream ordersOut(ordersFileName);
     if (!ordersOut.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
@@ -210,7 +244,8 @@ void sortPastOrders() {
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    processPastOrderLine(orders, orderQuantities, orderCount);
+    const char* ordersFileName = "Past orders.txt";
+    processPastOrderLine(orders, orderQuantities, orderCount, ordersFileName);
 
     char** sortedOrders = allocateMemory(MAXSIZE);
     int* sortedQuantities = new int[MAXSIZE];
@@ -782,7 +817,49 @@ void stockProduct() {
 }
 
 void seeDailyRevenue() {
+    sortPastOrders();
+    
+    char** orders = allocateMemory(MAXSIZE);
+    int* quantities = new int[MAXSIZE];
+    int orderCount = 0;
+    const char* ordersFileName = "Past orders sorted.txt";
+    processPastOrderLine(orders, quantities, orderCount, ordersFileName);
 
+    int totalRevenue = 0;
+    int orderPrices[MAXSIZE];
+    const char* menuFileName = "Menu.txt";
+
+    for (int i = 0; i < orderCount; i++) {
+        int price = findPriceInMenu(orders[i], menuFileName);
+        if (price < 0) {
+            cout << "Warning: Could not find price for " << orders[i] << ". Skipping." << endl;
+            orderPrices[i] = 0;
+            continue;
+        }
+        orderPrices[i] = price * quantities[i];
+        totalRevenue += orderPrices[i];
+    }
+
+    const char* sortedOrdersFile = "Past orders sorted.txt";
+    ofstream revenueFile(sortedOrdersFile);
+    if (!revenueFile.is_open()) {
+        cout << "Error: Unable to open sorted orders file for writing!" << endl;
+        deallocateMemory(orders, MAXSIZE);
+        delete[] quantities;
+        return;
+    }
+
+    for (int i = 0; i < orderCount; i++) {
+        revenueFile << orders[i] << " " << quantities[i] << " - " << orderPrices[i] << " leva" << endl;
+    }
+
+    revenueFile << "Total: " << totalRevenue << " leva" << endl;
+    revenueFile.close();
+
+    readAndPrintFile(sortedOrdersFile);
+
+    deallocateMemory(orders, MAXSIZE);
+    delete[] quantities;
 }
 
 void addNewItemToMenu() {
@@ -853,7 +930,7 @@ void printOptionsForManager() {
         cout << "8) Stock a product" << endl;
         cout << "9) See daily revenue" << endl;
         cout << "10) Generate a daily revenue" << endl;
-        cout << "11) See all revenues" << endl;
+        cout << "11) See all revenues from a date" << endl;
         cout << "12) Add a new item in the menu" << endl;
         cout << "13) Remove an item from the menu" << endl;
         cout << "14) See all options " << endl;
@@ -906,7 +983,7 @@ void printOptionsForManager() {
             stockProduct();
             break;
         case 9:
-            //seeDailyRevenue();
+            seeDailyRevenue();
             break;
         case 10:
             // generateDailyRevenue();
@@ -979,7 +1056,7 @@ void printOptionsForWaiter() {
             seePastOrdersSorted();
             break;
         case 6:
-            //seeDailyRevenue();
+            seeDailyRevenue();
             break;
         case 7:
             continue;
