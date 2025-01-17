@@ -18,7 +18,7 @@ void clearInputBuffer() {
     cin.ignore(numeric_limits<streamsize>::max(), '\n');	// discard characters from the input buffer
 }
 
- char** allocateMemory(int N) {
+char** allocateMemory(int N) {
      char** matrix = new char*[N];
      for (int i = 0; i < N; i++) {
          matrix[i] = new char[N];
@@ -26,7 +26,7 @@ void clearInputBuffer() {
      return matrix;
  }
 
- void deallocateMemory(char** matrix, int N) {
+void deallocateMemory(char** matrix, int N) {
      for (int i = 0; i < N; i++) {
          delete[] matrix[i];
      }
@@ -156,7 +156,6 @@ bool updateOrdersFile(const char* orderName, int quantity) {
     return true;
 }
 
-
 bool writeWarehouseToFile(const char* warehouseFileName, char** warehouseProducts, int* warehouseStock, char** warehouseUnits, int& warehouseCount) {
     ofstream warehouseOut(warehouseFileName);
     if (!warehouseOut.is_open()) {
@@ -172,6 +171,89 @@ bool writeWarehouseToFile(const char* warehouseFileName, char** warehouseProduct
 
     warehouseOut.close();
     return true;
+}
+
+void swapStrings(char* str1, char* str2) {
+    char temp[MAXSIZE];
+    copyString(temp, str1);
+    copyString(str1, str2);
+    copyString(str2, temp);
+}
+
+void swapIntegers(int& a, int& b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+int compareStringsForSorting(const char* str1, const char* str2) {
+    while (*str1 && *str2 && *str1 == *str2) {
+        str1++;
+        str2++;
+    }
+    return *str1 - *str2;
+}
+
+void bubbleSort(char** arr, int* quantities, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (compareStringsForSorting(arr[j], arr[j + 1]) > 0) {
+                swapStrings(arr[j], arr[j + 1]);
+                swapIntegers(quantities[j], quantities[j + 1]);
+            }
+        }
+    }
+}
+
+void sortPastOrders() {
+    char** orders = allocateMemory(MAXSIZE);
+    int* orderQuantities = new int[MAXSIZE];
+    int orderCount = 0;
+
+    processPastOrderLine(orders, orderQuantities, orderCount);
+
+    char** sortedOrders = allocateMemory(MAXSIZE);
+    int* sortedQuantities = new int[MAXSIZE];
+    int sortedCount = 0;
+
+    for (int i = 0; i < orderCount; i++) {
+        bool found = false;
+        for (int j = 0; j < sortedCount; j++) {
+            if (compareStrings(sortedOrders[j], orders[i])) {
+                sortedQuantities[j] += orderQuantities[i];
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            copyString(sortedOrders[sortedCount], orders[i]);
+            sortedQuantities[sortedCount] = orderQuantities[i];
+            sortedCount++;
+        }
+    }
+
+    bubbleSort(sortedOrders, sortedQuantities, sortedCount);
+
+    const char* sortedOrdersFile = "Past orders sorted.txt";
+    ofstream sortedOrdersOut(sortedOrdersFile);
+    if (!sortedOrdersOut.is_open()) {
+        cout << "Error: Unable to open sorted orders file for writing!" << endl;
+        deallocateMemory(orders, MAXSIZE);
+        delete[] orderQuantities;
+        deallocateMemory(sortedOrders, MAXSIZE);
+        delete[] sortedQuantities;
+        return;
+    }
+
+    for (int i = 0; i < sortedCount; i++) {
+        sortedOrdersOut << sortedOrders[i] << " " << sortedQuantities[i] << endl;
+    }
+    sortedOrdersOut.close();
+
+    deallocateMemory(orders, MAXSIZE);
+    delete[] orderQuantities;
+    deallocateMemory(sortedOrders, MAXSIZE);
+    delete[] sortedQuantities;
 }
 
 void startingMessages(char& role) {
@@ -514,6 +596,12 @@ void seePastOrders() {
     readAndPrintFile(pastOrders);
 }
 
+void seePastOrdersSorted() {
+    sortPastOrders();
+    const char* sortedPastOrdersFile = "Past orders sorted.txt";
+    readAndPrintFile(sortedPastOrdersFile);
+}
+
 void writeOffProduct() {
     char productName[MAXSIZE];
     cout << "Product to be removed: ";
@@ -643,7 +731,7 @@ void printOptionsForManager() {
         cout << "2) Make an order" << endl;
         cout << "3) Cancel an order" << endl;
         cout << "4) See past orders" << endl;
-        cout << "5) See past orders list" << endl;
+        cout << "5) See past orders sorted" << endl;
         cout << "6) See how much products are left" << endl;
         cout << "7) Write-off a product" << endl;
         cout << "8) Stock a product" << endl;
@@ -690,7 +778,7 @@ void printOptionsForManager() {
             seePastOrders();
             break;
         case 5:
-            // seePastOrdersList();
+            seePastOrdersSorted();
             break;
         case 6:
             seeProductsLeft();
@@ -773,7 +861,7 @@ void printOptionsForWaiter() {
             seePastOrders();
             break;
         case 5:
-            //seePastOrdersList();
+            seePastOrdersSorted();
             break;
         case 6:
             //seeDailyRevenue();
