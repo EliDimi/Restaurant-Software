@@ -82,6 +82,23 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     unit[j] = '\0';
 }
 
+bool writeWarehouseToFile(const char* warehouseFileName, char** warehouseProducts, int* warehouseStock, char** warehouseUnits, int& warehouseCount) {
+    ofstream warehouseOut(warehouseFileName);
+    if (!warehouseOut.is_open()) {
+        cout << "Error: Unable to open warehouse file for writing." << endl;
+        return false;
+    }
+
+    for (int i = 0; i < warehouseCount; i++) {
+        if (warehouseStock[i] > 0) {
+            warehouseOut << warehouseProducts[i] << " " << warehouseStock[i] << " " << warehouseUnits[i] << endl;
+        }
+    }
+
+    warehouseOut.close();
+    return true;
+}
+
 void startingMessages(char& role) {
     cout << "Welcome!" << endl;
     cout << "Today is 01.01.2025" << endl;
@@ -193,17 +210,9 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
         }
 
         while (line[i] != '\0') {
-            while (line[i] == ' ') {
-                i++;
-            }
-
             quantities[productCount] = 0;
             while (line[i] >= '0' && line[i] <= '9') {
                 quantities[productCount] *= 10 + (line[i] - '0');
-                i++;
-            }
-
-            while (line[i] == ' ') {
                 i++;
             }
 
@@ -211,7 +220,12 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
             while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
                 productsFromRecipe[productCount][j++] = line[i++];
             }
-            productsFromRecipe[productCount][j - 1] = '\0';
+            if (line[i] == '\0') {
+                productsFromRecipe[productCount][j] = '\0';
+            }
+            else {
+                productsFromRecipe[productCount][j - 1] = '\0';
+            }
             productCount++;
         }
         break;
@@ -219,45 +233,69 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
     recipeFile.close();
 }
 
-void removeProductsFromWarehouse(char* orderName, int quantity) {
-    const char* recipe = "Recipes.txt";
-    ifstream recipeFile(recipe);
-    if (!recipeFile.is_open()) {
-        cout << "Error: Unable to open file." << endl;
-        return;
-    }
-
-    recipeFile.seekg(0, ios::end);
-    size_t recipeFileSize = recipeFile.tellg();
-    recipeFile.seekg(0, ios::beg);
-    recipeFile.clear();
-
-    char* recipeContent = new char[recipeFileSize + 1];
-
-    recipeFile.getline(recipeContent, recipeFileSize, '\0');
-    recipeFile.close();
-    
-    const char* warehouse = "Warehouse.txt";
-    ifstream warehouseFile(warehouse);
+bool removeProductsFromWarehouse(char** products, int* quantities, int& productCount, int quantity) {
+    const char* warehouseFileName = "Warehouse.txt";
+    ifstream warehouseFile(warehouseFileName);
     if (!warehouseFile.is_open()) {
-        cout << "Error: Unable to open file." << endl;
-        return;
+        cout << "Error: Unable to open warehouse file." << endl;
+        return false;
     }
 
-    warehouseFile.seekg(0, ios::end);
-    size_t warehouseFileSize = warehouseFile.tellg();
-    warehouseFile.seekg(0, ios::beg);
-    warehouseFile.clear();
+    char** warehouseProducts = allocateMemory(MAXSIZE);
+    int* warehouseStock = new int[MAXSIZE];
+    char** warehouseUnits = allocateMemory(MAXSIZE);
+    int warehouseCount = 0;
+    char line[MAXSIZE];
 
-    char* warehouseContent = new char[warehouseFileSize + 1];
-
-    warehouseFile.getline(warehouseContent, warehouseFileSize, '\0');
+    while (warehouseFile.getline(line, MAXSIZE)) {
+        processWarehouseLine(line, warehouseProducts[warehouseCount], warehouseStock[warehouseCount], warehouseUnits[warehouseCount]);
+        warehouseCount++;
+    }
     warehouseFile.close();
 
+    for (int i = 0; i < productCount; i++) {
+        bool found = false;
+        for (int j = 0; j < warehouseCount; j++) {
+            if (compareStrings(products[i], warehouseProducts[j])) {
+                found = true;
+                if (warehouseStock[j] < (quantities[i] * quantity)) {
+                    cout << "Error: Not enough " << products[i] << " in the warehouse!" << endl;
+                    deallocateMemory(warehouseProducts, MAXSIZE);
+                    deallocateMemory(warehouseUnits, MAXSIZE);
+                    delete[] warehouseStock;
+                    return false; 
+                }
+                break;
+            }
+        }
+        if (!found) {
+            cout << "Error: Product " << products[i] << " not found in the warehouse!" << endl;
+            deallocateMemory(warehouseProducts, MAXSIZE);
+            deallocateMemory(warehouseUnits, MAXSIZE);
+            delete[] warehouseStock;
+            return false; 
+        }
+    }
 
+    for (int i = 0; i < productCount; i++) {
+        for (int j = 0; j < warehouseCount; j++) {
+            if (compareStrings(products[i], warehouseProducts[j])) {
+                warehouseStock[j] -= (quantities[i] * quantity);
+                break;
+            }
+        }
+    }
 
-    delete[] recipeContent;
-    delete[] warehouseContent;
+    if (!writeWarehouseToFile(warehouseFileName, warehouseProducts, warehouseStock, warehouseUnits, warehouseCount)) {
+        deallocateMemory(warehouseProducts, MAXSIZE);
+        deallocateMemory(warehouseUnits, MAXSIZE);
+        delete[] warehouseStock;
+        return false;
+    }
+    deallocateMemory(warehouseProducts, MAXSIZE);
+    deallocateMemory(warehouseUnits, MAXSIZE);
+    delete[] warehouseStock;
+    return true;
 }
 
 void makeOrder() {
@@ -291,9 +329,15 @@ void makeOrder() {
 
     extractRecipeIngredients(orderName, productsFromRecipe, quantitiesFromRecipe, productCount);
 
+    if (!removeProductsFromWarehouse(productsFromRecipe, quantitiesFromRecipe, productCount, quantity)) {
+        cout << "Order cannot be completed due to insufficient ingredients." << endl;
+    }
+    else {
+        cout << "Order successfully processed!" << endl;
+    }
 
-    cout << "Success" << endl;
-    removeProductsFromWarehouse(orderName, quantity);
+    deallocateMemory(productsFromRecipe, MAXSIZE);
+    delete[] quantitiesFromRecipe;
 }
 
 void writeOffProduct() {
@@ -335,6 +379,10 @@ void writeOffProduct() {
     }
     if (!productFound) {
         cout << "Product not found in the warehouse!" << endl;
+        deallocateMemory(products, MAXSIZE);
+        deallocateMemory(unit, MAXSIZE);
+        delete[] stock;
+        delete[] line;
         return;
     }
 
@@ -345,16 +393,7 @@ void writeOffProduct() {
     }
     productCount--;
 
-    ofstream warehouseOut(warehouseFileName, ios::trunc);
-    if (!warehouseOut.is_open()) {
-        cout << "Error: Unable to open warehouse file for writing." << endl;
-        return;
-    }
-
-    for (int i = 0; i < productCount; i++) {
-        warehouseOut << products[i] << " " << stock[i] << " " << unit[i] << endl;
-    }
-    warehouseOut.close();
+    writeWarehouseToFile(warehouseFileName, products, stock, unit, productCount);
 
     cout << "Product \"" << productName << "\" removed from the warehouse successfully!" << endl;
 
@@ -413,15 +452,7 @@ void stockProduct() {
         productCount++;
     }
 
-    ofstream warehouseOut(warehouseFileName);
-    if (!warehouseOut.is_open()) {
-        cout << "Error: Unable to open warehouse file for writing." << endl;
-        return;
-    }
-    for (int i = 0; i < productCount; i++) {
-        warehouseOut << productInWarehouse[i] << ' ' << stockInWarehouse[i] << " " << unitInWarehouse[i] << endl;
-    }
-    warehouseOut.close();
+    writeWarehouseToFile(warehouseFileName, productInWarehouse, stockInWarehouse, unitInWarehouse, productCount);
 
     cout << "Product \"" << product << "\" updated successfully in the warehouse!" << endl;
 
