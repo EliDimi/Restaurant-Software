@@ -82,6 +82,81 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     unit[j] = '\0';
 }
 
+void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) {
+    const char* ordersFileName = "Past orders.txt";
+    ifstream ordersFile(ordersFileName);
+    if (!ordersFile.is_open()) {
+        cout << "Error: Unable to open orders file!" << endl;
+        return;
+    }
+
+    char line[MAXSIZE];
+
+    while (ordersFile.getline(line, MAXSIZE)) {
+        int i = 0, j = 0;
+
+        while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
+            orders[orderCount][j++] = line[i++];
+        }
+        orders[orderCount][j - 1] = '\0';
+
+        orderQuantities[orderCount] = 0;
+        while (line[i] >= '0' && line[i] <= '9') {
+            orderQuantities[orderCount] = orderQuantities[orderCount] * 10 + (line[i] - '0');
+            i++;
+        }
+
+        orderCount++;
+    }
+}
+
+bool updateOrdersFile(const char* orderName, int quantity) {
+    char** orders = allocateMemory(MAXSIZE);
+    int* orderQuantities = new int[MAXSIZE];
+    int orderCount = 0;
+
+    processPastOrderLine(orders, orderQuantities, orderCount);
+
+    for (int i = orderCount - 1; i >= 0; i--) {
+        if (compareStrings(orders[i], orderName)) {
+            if (orderQuantities[i] == quantity) {
+                for (int j = i; j < orderCount - 1; j++) {
+                    copyString(orders[j], orders[j + 1]);
+                    orderQuantities[j] = orderQuantities[j + 1];
+                }
+                orderCount--;
+            }
+            else if (orderQuantities[i] > quantity) {
+                orderQuantities[i] -= quantity;
+            }
+            else {
+                cout << "Error: You are trying to cancel more than ordered!" << endl;
+                deallocateMemory(orders, MAXSIZE);
+                delete[] orderQuantities;
+                return false;
+            }
+            break;
+        }
+    }
+
+    const char* ordersFileName = "Past orders.txt";
+    ofstream ordersOut(ordersFileName);
+    if (!ordersOut.is_open()) {
+        cout << "Error: Unable to open orders file for writing!" << endl;
+        deallocateMemory(orders, MAXSIZE);
+        delete[] orderQuantities;
+        return false;
+    }
+
+    for (int i = 0; i < orderCount; i++) {
+        ordersOut << orders[i] << " " << orderQuantities[i] << endl;
+    }
+    ordersOut.close();
+
+    return true;
+}
+
+
 bool writeWarehouseToFile(const char* warehouseFileName, char** warehouseProducts, int* warehouseStock, char** warehouseUnits, int& warehouseCount) {
     ofstream warehouseOut(warehouseFileName);
     if (!warehouseOut.is_open()) {
@@ -298,6 +373,56 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
     return true;
 }
 
+bool restoreProductsToWarehouse(char** products, int* quantities, int productCount, int restoreQuantity) {
+    const char* warehouseFileName = "Warehouse.txt";
+    ifstream warehouseFile(warehouseFileName);
+    if (!warehouseFile.is_open()) {
+        cout << "Error: Unable to open warehouse file!" << endl;
+        return false;
+    }
+
+    char** warehouseProducts = allocateMemory(MAXSIZE);
+    int* warehouseStock = new int[MAXSIZE];
+    char** warehouseUnits = allocateMemory(MAXSIZE);
+    int warehouseCount = 0;
+    char line[MAXSIZE];
+
+    while (warehouseFile.getline(line, MAXSIZE)) {
+        processWarehouseLine(line, warehouseProducts[warehouseCount], warehouseStock[warehouseCount], warehouseUnits[warehouseCount]);
+        warehouseCount++;
+    }
+    warehouseFile.close();
+
+    for (int i = 0; i < productCount; i++) {
+        bool found = false;
+        for (int j = 0; j < warehouseCount; j++) {
+            if (compareStrings(products[i], warehouseProducts[j])) {
+                warehouseStock[j] += (quantities[i] * restoreQuantity);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            copyString(warehouseProducts[warehouseCount], products[i]);
+            warehouseStock[warehouseCount] = quantities[i] * restoreQuantity;
+            warehouseCount++;
+        }
+    }
+
+    if (!writeWarehouseToFile(warehouseFileName, warehouseProducts, warehouseStock, warehouseUnits, warehouseCount)) {
+        deallocateMemory(warehouseProducts, MAXSIZE);
+        deallocateMemory(warehouseUnits, MAXSIZE);
+        delete[] warehouseStock;
+        return false;
+    }
+
+    deallocateMemory(warehouseProducts, MAXSIZE);
+    deallocateMemory(warehouseUnits, MAXSIZE);
+    delete[] warehouseStock;
+    return true;
+}
+
 void saveOrderToFile(const char* orderName, const int quantity) {
     const char* ordersFileName("Past Orders.txt");
     ofstream ordersFile(ordersFileName, ios::app);
@@ -353,6 +478,36 @@ void makeOrder() {
 
     deallocateMemory(productsFromRecipe, MAXSIZE);
     delete[] quantitiesFromRecipe;
+}
+
+void cancelOrder() {
+    char orderName[MAXSIZE];
+    int quantity;
+    cout << "Which order would you like to cancel: ";
+    cin.ignore();
+    cin.getline(orderName, MAXSIZE);
+    clearInputBuffer();
+    cout << "How many times it was ordered: ";
+    cin >> quantity;
+
+    updateOrdersFile(orderName, quantity);
+
+    char** productsFromRecipe = allocateMemory(MAXSIZE);
+    int* quantitiesFromRecipe = new int[MAXSIZE];
+    int productCount = 0;
+
+    extractRecipeIngredients(orderName, productsFromRecipe, quantitiesFromRecipe, productCount);
+
+    if (!restoreProductsToWarehouse(productsFromRecipe, quantitiesFromRecipe, productCount, quantity)) {
+        cout << "Error: Could not restore products to warehouse!" << endl;
+    }
+    else {
+        cout << "Order successfully canceled and products restored!" << endl;
+    }
+
+    deallocateMemory(productsFromRecipe, MAXSIZE);
+    delete[] quantitiesFromRecipe;
+
 }
 
 void writeOffProduct() {
@@ -482,7 +637,7 @@ void printOptionsForManager() {
         cout << "Select an option:" << endl;
         cout << "1) See menu" << endl;
         cout << "2) Make an order" << endl;
-        cout << "3) Remove an order" << endl;
+        cout << "3) Cancel an order" << endl;
         cout << "4) See past orders" << endl;
         cout << "5) See past oders list" << endl;
         cout << "6) See how much products are left" << endl;
@@ -525,7 +680,7 @@ void printOptionsForManager() {
             makeOrder();
             break;
         case 3:
-            // removeOrder();
+            cancelOrder();
             break;
         case 4:
             // seePastOrders();
@@ -571,7 +726,7 @@ void printOptionsForWaiter() {
         cout << "Select an option:" << endl;
         cout << "1) See menu" << endl;
         cout << "2) Make an order" << endl;
-        cout << "3) Remove an order" << endl;
+        cout << "3) Cancel an order" << endl;
         cout << "4) See past orders" << endl;
         cout << "5) See past orders list" << endl;
         cout << "6) See daily revenue" << endl;
@@ -608,7 +763,7 @@ void printOptionsForWaiter() {
             makeOrder();
             break;
         case 3:
-            //removeOrder();
+            cancelOrder();
             break;
         case 4:
             //seePastOrders();
