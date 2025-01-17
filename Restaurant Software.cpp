@@ -454,6 +454,37 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
     return true;
 }
 
+void removeLineFromFile(const char* fileName, const char* searchLine) {
+    ifstream file(fileName);
+    if (!file.is_open()) {
+        cout << "Error: Unable to open file: " << fileName << endl;
+        return;
+    }
+
+    char lines[MAXSIZE][MAXSIZE];
+    int lineCount = 0;
+    char line[MAXSIZE];
+
+    while (file.getline(line, MAXSIZE)) {
+        if (!compareStrings(line, searchLine)) {
+            copyString(lines[lineCount], line);
+            lineCount++;
+        }
+    }
+    file.close();
+
+    ofstream outFile(fileName);
+    if (!outFile.is_open()) {
+        cout << "Error: Unable to open file for writing: " << fileName << endl;
+        return;
+    }
+
+    for (int i = 0; i < lineCount; i++) {
+        outFile << lines[i] << endl;
+    }
+    outFile.close();
+}
+
 bool restoreProductsToWarehouse(char** products, int* quantities, int productCount, int restoreQuantity) {
     const char* warehouseFileName = "Warehouse.txt";
     ifstream warehouseFile(warehouseFileName);
@@ -754,7 +785,7 @@ void seeDailyRevenue() {
 
 }
 
-void addNewItem() {
+void addNewItemToMenu() {
     char dish[MAXSIZE];
     char price[MAXSIZE];
     cout << "What new dish do you want to add: ";
@@ -765,6 +796,11 @@ void addNewItem() {
     cin.getline(price, MAXSIZE);
     clearInputBuffer();
 
+    const char* menuFileName = "Menu.txt";
+    if (findWordInFile(dish, menuFileName)) {
+        cout << "Error: This dish is already in the menu!" << endl;
+        return;
+    }
     saveDishToFile(dish, price);
 
     char recipe[MAXSIZE];
@@ -772,12 +808,36 @@ void addNewItem() {
     cout << "Write recipe for the cookbook: ";
     cin.getline(recipe, MAXSIZE);
     clearInputBuffer();
+
+    const char* recipeFileName = "Recipes.txt";
+    if (findWordInFile(recipe, recipeFileName)) {
+        cout << "Recipe is already in the cookbook! Glad is back on menu!" << endl;
+        return;
+    }
+
     saveRecipeToFile(recipe);
 
     cout << "***" << endl;
     cout << "Do not forget to order ingredients for the new dish!" << endl;
     cout << "***" << endl;
 
+}
+
+void removeItemFromMenu() {
+    char dish[MAXSIZE];
+    cout << "What item do you want to remove menu: ";
+    cin.ignore();
+    cin.getline(dish, MAXSIZE);
+    clearInputBuffer();
+
+    const char* menuFileName = "Menu.txt";
+    if (!findWordInFile(dish, menuFileName)) {
+        cout << "Dish is not in the menu! Consider adding it!" << endl;
+        return;
+    }
+
+    removeLineFromFile(menuFileName, dish);
+    cout << "Dish '" << dish << "' successfully removed from the menu!" << endl;
 }
 
 void printOptionsForManager() {
@@ -855,10 +915,10 @@ void printOptionsForManager() {
             // seeAllRevenues();
             break;
         case 12:
-            addNewItem();
+            addNewItemToMenu();
             break;
         case 13:
-            // removeItemFromMenu();
+            removeItemFromMenu();
             break;
         case 14:
             continue;
