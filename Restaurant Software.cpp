@@ -212,7 +212,7 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
         while (line[i] != '\0') {
             quantities[productCount] = 0;
             while (line[i] >= '0' && line[i] <= '9') {
-                quantities[productCount] *= 10 + (line[i] - '0');
+                quantities[productCount] = quantities[productCount] * 10 + (line[i] - '0');
                 i++;
             }
 
