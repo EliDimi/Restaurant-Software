@@ -1030,6 +1030,41 @@ void generateDailyRevenue(char* date) {
     revenueOut.close();
 }
  
+void seeAllRevenues() {
+    char dateToFind[MAXSIZE];
+    cout << "From what date do ypu want to check: ";
+    cin.ignore();
+    cin.getline(dateToFind, MAXSIZE);
+    clearInputBuffer();
+
+    const char* revenueFileName = "Revenues.txt";
+    ifstream revenueFile(revenueFileName);
+    if (!revenueFile.is_open()) {
+        cout << "Error: Unable to open revenues file!" << endl;
+        return;
+    }
+
+    char line[MAXSIZE];
+    bool print = false;
+    cout << "\n=== Revenues from " << dateToFind << " onwards ===\n";
+
+    while (revenueFile.getline(line, MAXSIZE)) {
+        if (!print) {
+            if (compareStrings(line, dateToFind)) {
+                print = true;
+            }
+        }
+        if (print) {
+            cout << line << endl;
+        }
+    }
+    cout << endl;
+    revenueFile.close();
+    if (!print) {
+        cout << "Error: Date not found in revenues file!" << endl;
+    }
+}
+
 void printOptionsForManager(char* date) {
     while (true) {
         cout << "Select an option:" << endl;
@@ -1102,7 +1137,7 @@ void printOptionsForManager(char* date) {
             generateDailyRevenue(date);
             return;
         case 11:
-            //seeAllRevenues();
+            seeAllRevenues();
             break;
         case 12:
             addNewItemToMenu();
