@@ -305,9 +305,72 @@ void findDate(const char* revenuesFile, char* date) {
     file.close();
 }
 
-void startingMessages(char& role) {
+void generateNextDate(char* date, char* nextDate) {
+    int day = 0, month = 0, year = 0;
+    int i = 0;
+
+    while (date[i] != '.' && date[i] != '\0') {
+        day = day * 10 + (date[i] - '0');
+        i++;
+    }
+    i++;
+    while (date[i] != '.' && date[i] != '\0') {
+        month = month * 10 + (date[i] - '0');
+        i++;
+    }
+    i++;
+    while (date[i] != '\0') {
+        year = year * 10 + (date[i] - '0');
+        i++;
+    }
+
+    day++;
+    int daysInMonth;
+    if (month == 2) {
+        daysInMonth = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
+    }
+    else if (month == 4 || month == 6 || month == 9 || month == 11) {
+        daysInMonth = 30;
+    }
+    else {
+        daysInMonth = 31;
+    }
+    if (day > daysInMonth) {
+        day = 1;
+        month++;
+        if (month > 12) {
+            month = 1;
+            year++;
+        }
+    }
+
+    int index = 0;
+    if (day < 10) nextDate[index++] = '0';
+    int temp = day;
+    if (temp >= 10) {
+        nextDate[index++] = '0' + (temp / 10);
+    }
+    nextDate[index++] = '0' + (temp % 10);
+    nextDate[index++] = '.';
+    if (month < 10) nextDate[index++] = '0';
+    temp = month;
+    if (temp >= 10) {
+        nextDate[index++] = '0' + (temp / 10);
+    }
+    nextDate[index++] = '0' + (temp % 10);
+    nextDate[index++] = '.';
+    temp = year;
+    nextDate[index++] = '0' + (temp / 1000);
+    nextDate[index++] = '0' + ((temp / 100) % 10);
+    nextDate[index++] = '0' + ((temp / 10) % 10);
+    nextDate[index++] = '0' + (temp % 10);
+
+    nextDate[index] = '\0';
+
+}
+
+void startingMessages(char& role, char* date) {
     const char* revenuesFileName = "Revenues.txt";
-    char date[MAXSIZE];
     findDate(revenuesFileName, date);
     cout << "Welcome!" << endl;
     cout << "Today is " << date << endl;
@@ -934,7 +997,40 @@ void removeItemFromMenu() {
     cout << "Dish '" << dish << "' successfully removed from the menu!" << endl;
 }
 
-void printOptionsForManager() {
+void generateDailyRevenue(char* date) {
+    const char* sortedOrdersFile = "Past orders sorted.txt";
+    const char* revenueFile = "Revenues.txt";
+ 
+    cout << date << endl;
+    seeDailyRevenue();
+
+    ofstream revenueOut(revenueFile, ios::app);
+    if (!revenueOut.is_open()) {
+        cout << "Error: Unable to open revenue file for writing!" << endl;
+        return;
+    }
+
+    ifstream sortedOrders(sortedOrdersFile);
+    if (!sortedOrders.is_open()) {
+        cout << "Error: Unable to open sorted orders file!" << endl;
+        revenueOut.close();
+        return;
+    }
+
+    char line[MAXSIZE];
+    while (sortedOrders.getline(line, MAXSIZE)) {
+        revenueOut << line << endl;         
+    }
+    sortedOrders.close();
+    revenueOut << "---------------------------------" << endl;
+
+    char nextDate[MAXSIZE];
+    generateNextDate(date, nextDate);
+    revenueOut << nextDate << endl;
+    revenueOut.close();
+}
+ 
+void printOptionsForManager(char* date) {
     while (true) {
         cout << "Select an option:" << endl;
         cout << "1) See menu" << endl;
@@ -1003,10 +1099,10 @@ void printOptionsForManager() {
             seeDailyRevenue();
             break;
         case 10:
-            // generateDailyRevenue();
-            break;
+            generateDailyRevenue(date);
+            return;
         case 11:
-            // seeAllRevenues();
+            //seeAllRevenues();
             break;
         case 12:
             addNewItemToMenu();
@@ -1086,14 +1182,15 @@ void printOptionsForWaiter() {
 
 int main() {
     char role;
-    startingMessages(role);
+    char* date = new char[MAXSIZE];
+    startingMessages(role, date);
     if (role == 'A' || role == 'a') {
-        printOptionsForManager();
+        printOptionsForManager(date);
     }
     else if (role == 'B' || role == 'b') {
         printOptionsForWaiter();
     }
-
+    delete[] date;
 
     return 0;
 }
