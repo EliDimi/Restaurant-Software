@@ -155,25 +155,29 @@ bool updateOrdersFile(const char* orderName, int quantity) {
     processPastOrderLine(orders, orderQuantities, orderCount);
 
     for (int i = orderCount - 1; i >= 0; i--) {
-        if (compareStrings(orders[i], orderName)) {
-            if (orderQuantities[i] == quantity) {
-                for (int j = i; j < orderCount - 1; j++) {
-                    copyString(orders[j], orders[j + 1]);
-                    orderQuantities[j] = orderQuantities[j + 1];
-                }
-                orderCount--;
-            }
-            else if (orderQuantities[i] > quantity) {
-                orderQuantities[i] -= quantity;
-            }
-            else {
-                cout << "Error: You are trying to cancel more than ordered!" << endl;
-                deallocateMemory(orders, MAXSIZE);
-                delete[] orderQuantities;
-                return false;
-            }
+        if (!compareStrings(orders[i], orderName)) {
+            continue;
+        }
+
+        if (orderQuantities[i] > quantity) {
+            orderQuantities[i] -= quantity;
             break;
         }
+
+        if (orderQuantities[i] < quantity) {
+            cout << "Error: You are trying to cancel more than ordered!" << endl;
+            deallocateMemory(orders, MAXSIZE);
+            delete[] orderQuantities;
+            return false;
+        }
+
+        for (int j = i; j < orderCount - 1; j++) {
+            copyString(orders[j], orders[j + 1]);
+            orderQuantities[j] = orderQuantities[j + 1];
+        }
+
+        orderCount--;
+        break;
     }
 
     ofstream ordersOut(ORDERS_FILE);
