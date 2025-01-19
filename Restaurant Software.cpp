@@ -364,31 +364,6 @@ void generateNextDate(char* date, char* nextDate) {
 
 }
 
-void startingMessages(char& role, char* date) {
-    findDate(date);
-    cout << "Welcome!" << endl;
-    cout << "Today is " << date << endl;
-    cout << "Please select an option:" << endl;
-    cout << "A - Manager or B - Waiter" << endl;
-    while (true) {
-        cout << "I am: ";
-        cin >> role;
-        if (role == 'A' || role == 'a') {
-            clearConsole();
-            cout << "You selected: Manager" << endl;
-            break;
-        }
-        else if (role == 'B' || role == 'b') {
-            clearConsole();
-            cout << "You selected: Waiter" << endl;
-            break;
-        }
-        else {
-            cout << "Invalid option! Try again!" << endl;
-        }
-    }
-}
-
 void readAndPrintFile(const char* List) {
     ifstream file(List);
     if (!file.is_open()) {
@@ -411,15 +386,7 @@ void readAndPrintFile(const char* List) {
 
     delete[] fileContent;
     file.close();
-}
-
-void seeMenu() {
-    readAndPrintFile(MENU_FILE);
-}
-
-void seeProductsLeft() {
-    readAndPrintFile(WAREHOUSE_FILE);
-}
+} 
 
 bool findWordInFile(const char* word, const char* fileName) {
     ifstream file(fileName);
@@ -748,15 +715,6 @@ void cancelOrder() {
 
 }
 
-void seePastOrders() {
-    readAndPrintFile(ORDERS_FILE);
-}
-
-void seePastOrdersSorted() {
-    sortPastOrders();
-    readAndPrintFile(SORTED_ORDERS_FILE);
-}
-
 void writeOffProduct() {
     char productName[MAXSIZE];
     cout << "Product to be removed: ";
@@ -1063,7 +1021,7 @@ void printOptionsForManager(char* date) {
 
         switch (option) {
         case 1:
-            seeMenu();
+            readAndPrintFile(MENU_FILE);
             break;
         case 2:
             makeOrder();
@@ -1072,13 +1030,14 @@ void printOptionsForManager(char* date) {
             cancelOrder();
             break;
         case 4:
-            seePastOrders();
+            readAndPrintFile(ORDERS_FILE);
             break;
         case 5:
-            seePastOrdersSorted();
+            sortPastOrders();
+            readAndPrintFile(SORTED_ORDERS_FILE);
             break;
         case 6:
-            seeProductsLeft();
+            readAndPrintFile(WAREHOUSE_FILE);
             break;
         case 7:
             writeOffProduct();
@@ -1137,7 +1096,7 @@ void printOptionsForWaiter() {
 
         switch (option) {
         case 1:
-            seeMenu();
+            readAndPrintFile(MENU_FILE);
             break;
         case 2:
             makeOrder();
@@ -1146,10 +1105,11 @@ void printOptionsForWaiter() {
             cancelOrder();
             break;
         case 4:
-            seePastOrders();
+            readAndPrintFile(ORDERS_FILE);
             break;
         case 5:
-            seePastOrdersSorted();
+            sortPastOrders();
+            readAndPrintFile(SORTED_ORDERS_FILE);
             break;
         case 6:
             seeDailyRevenue();
@@ -1157,8 +1117,32 @@ void printOptionsForWaiter() {
         case 7:
             continue;
         case 8:
-            // Exit the function
             return;
+        }
+    }
+}
+
+void startingMessages(char& role, char* date) {
+    findDate(date);
+    cout << "Welcome!" << endl;
+    cout << "Today is " << date << endl;
+    cout << "Please select an option:" << endl;
+    cout << "A - Manager or B - Waiter" << endl;
+    while (true) {
+        cout << "I am: ";
+        cin >> role;
+        if (role == 'A' || role == 'a') {
+            clearConsole();
+            cout << "You selected: Manager" << endl;
+            break;
+        }
+        else if (role == 'B' || role == 'b') {
+            clearConsole();
+            cout << "You selected: Waiter" << endl;
+            break;
+        }
+        else {
+            cout << "Invalid option! Try again!" << endl;
         }
     }
 }
