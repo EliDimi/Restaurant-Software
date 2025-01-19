@@ -274,18 +274,15 @@ void sortPastOrders() {
     bubbleSort(sortedOrders, sortedQuantities, sortedCount);
 
     ofstream sortedOrdersOut(SORTED_ORDERS_FILE);
-    if (!sortedOrdersOut.is_open()) {
+    if (sortedOrdersOut.is_open()) {
+        for (int i = 0; i < sortedCount; i++) {
+            sortedOrdersOut << sortedOrders[i] << " " << sortedQuantities[i] << endl;
+        }
+        sortedOrdersOut.close();
+    }
+    else {
         cout << "Error: Unable to open sorted orders file for writing!" << endl;
-        deallocateMemory(orders, MAXSIZE);
-        delete[] orderQuantities;
-        deallocateMemory(sortedOrders, MAXSIZE);
-        delete[] sortedQuantities;
-        return;
     }
-    for (int i = 0; i < sortedCount; i++) {
-        sortedOrdersOut << sortedOrders[i] << " " << sortedQuantities[i] << endl;
-    }
-    sortedOrdersOut.close();
 
     deallocateMemory(orders, MAXSIZE);
     delete[] orderQuantities;
