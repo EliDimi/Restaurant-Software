@@ -1,5 +1,6 @@
-Carrot salad 2
-Chicken wings 1
-Shopska salad 3
-Sprite 5
-Wine 3
+Carrot salad 2 - 10 leva
+Chicken wings 1 - 12 leva
+Shopska salad 3 - 21 leva
+Sprite 5 - 10 leva
+Wine 3 - 15 leva
+Total: 68 leva
