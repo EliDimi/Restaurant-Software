@@ -1,8 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include "Constants.h"
 using namespace std;
-
-const int MAXSIZE = 100;
 
 void clearConsole() {
     cout << "\033[;H"; // Moves cursor to the top left
@@ -82,8 +81,8 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     unit[j] = '\0';
 }
 
-void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount, const char* ordersFileName) {
-    ifstream ordersFile(ordersFileName);
+void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) {
+    ifstream ordersFile(ORDERS_FILE);
     if (!ordersFile.is_open()) {
         cout << "Error: Unable to open orders file!" << endl;
         return;
@@ -109,8 +108,8 @@ void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount, 
     }
 }
 
-int findPriceInMenu(const char* dish, const char* menuFileName) {
-    ifstream menuFile(menuFileName);
+int findPriceInMenu(const char* dish) {
+    ifstream menuFile(MENU_FILE);
     if (!menuFile.is_open()) {
         cout << "Error: Unable to open menu file!" << endl;
         return -1;
@@ -149,8 +148,7 @@ bool updateOrdersFile(const char* orderName, int quantity) {
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    const char* ordersFileName = "Past orders.txt";
-    processPastOrderLine(orders, orderQuantities, orderCount, ordersFileName);
+    processPastOrderLine(orders, orderQuantities, orderCount);
 
     for (int i = orderCount - 1; i >= 0; i--) {
         if (compareStrings(orders[i], orderName)) {
@@ -174,7 +172,7 @@ bool updateOrdersFile(const char* orderName, int quantity) {
         }
     }
 
-    ofstream ordersOut(ordersFileName);
+    ofstream ordersOut(ORDERS_FILE);
     if (!ordersOut.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
         deallocateMemory(orders, MAXSIZE);
@@ -190,8 +188,8 @@ bool updateOrdersFile(const char* orderName, int quantity) {
     return true;
 }
 
-bool writeWarehouseToFile(const char* warehouseFileName, char** warehouseProducts, int* warehouseStock, char** warehouseUnits, int& warehouseCount) {
-    ofstream warehouseOut(warehouseFileName);
+bool writeWarehouseToFile(char** warehouseProducts, int* warehouseStock, char** warehouseUnits, int& warehouseCount) {
+    ofstream warehouseOut(WAREHOUSE_FILE);
     if (!warehouseOut.is_open()) {
         cout << "Error: Unable to open warehouse file for writing." << endl;
         return false;
@@ -244,8 +242,7 @@ void sortPastOrders() {
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    const char* ordersFileName = "Past orders.txt";
-    processPastOrderLine(orders, orderQuantities, orderCount, ordersFileName);
+    processPastOrderLine(orders, orderQuantities, orderCount);
 
     char** sortedOrders = allocateMemory(MAXSIZE);
     int* sortedQuantities = new int[MAXSIZE];
@@ -269,8 +266,7 @@ void sortPastOrders() {
 
     bubbleSort(sortedOrders, sortedQuantities, sortedCount);
 
-    const char* sortedOrdersFile = "Past orders sorted.txt";
-    ofstream sortedOrdersOut(sortedOrdersFile);
+    ofstream sortedOrdersOut(SORTED_ORDERS_FILE);
     if (!sortedOrdersOut.is_open()) {
         cout << "Error: Unable to open sorted orders file for writing!" << endl;
         deallocateMemory(orders, MAXSIZE);
@@ -279,7 +275,6 @@ void sortPastOrders() {
         delete[] sortedQuantities;
         return;
     }
-
     for (int i = 0; i < sortedCount; i++) {
         sortedOrdersOut << sortedOrders[i] << " " << sortedQuantities[i] << endl;
     }
@@ -291,10 +286,10 @@ void sortPastOrders() {
     delete[] sortedQuantities;
 }
 
-void findDate(const char* revenuesFile, char* date) {
-    ifstream file(revenuesFile);
+void findDate(char* date) {
+    ifstream file(REVENUE_FILE);
     if (!file.is_open()) {
-        cout << "Error: Unable to open file: " << revenuesFile << endl;
+        cout << "Error: Unable to open file: " << REVENUE_FILE << endl;
         return;
     }
     char line[MAXSIZE];
@@ -370,8 +365,7 @@ void generateNextDate(char* date, char* nextDate) {
 }
 
 void startingMessages(char& role, char* date) {
-    const char* revenuesFileName = "Revenues.txt";
-    findDate(revenuesFileName, date);
+    findDate(date);
     cout << "Welcome!" << endl;
     cout << "Today is " << date << endl;
     cout << "Please select an option:" << endl;
@@ -420,13 +414,11 @@ void readAndPrintFile(const char* List) {
 }
 
 void seeMenu() {
-    const char* menu = "Menu.txt";
-    readAndPrintFile(menu);
+    readAndPrintFile(MENU_FILE);
 }
 
 void seeProductsLeft() {
-    const char* warehouse = "Warehouse.txt";
-    readAndPrintFile(warehouse);
+    readAndPrintFile(WAREHOUSE_FILE);
 }
 
 bool findWordInFile(const char* word, const char* fileName) {
@@ -459,8 +451,7 @@ bool findWordInFile(const char* word, const char* fileName) {
 }
 
 void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, int* quantities, int& productCount) {
-    const char* recipeFileName = "Recipes.txt";
-    ifstream recipeFile(recipeFileName);
+    ifstream recipeFile(RECIPES_FILE);
     if (!recipeFile.is_open()) {
         cout << "Error: Unable to open recipe file." << endl;
         return;
@@ -505,8 +496,7 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
 }
 
 bool removeProductsFromWarehouse(char** products, int* quantities, int& productCount, int quantity) {
-    const char* warehouseFileName = "Warehouse.txt";
-    ifstream warehouseFile(warehouseFileName);
+    ifstream warehouseFile(WAREHOUSE_FILE);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file." << endl;
         return false;
@@ -557,7 +547,7 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
         }
     }
 
-    if (!writeWarehouseToFile(warehouseFileName, warehouseProducts, warehouseStock, warehouseUnits, warehouseCount)) {
+    if (!writeWarehouseToFile(warehouseProducts, warehouseStock, warehouseUnits, warehouseCount)) {
         deallocateMemory(warehouseProducts, MAXSIZE);
         deallocateMemory(warehouseUnits, MAXSIZE);
         delete[] warehouseStock;
@@ -601,8 +591,7 @@ void removeLineFromFile(const char* fileName, const char* searchLine) {
 }
 
 bool restoreProductsToWarehouse(char** products, int* quantities, int productCount, int restoreQuantity) {
-    const char* warehouseFileName = "Warehouse.txt";
-    ifstream warehouseFile(warehouseFileName);
+    ifstream warehouseFile(WAREHOUSE_FILE);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file!" << endl;
         return false;
@@ -637,7 +626,7 @@ bool restoreProductsToWarehouse(char** products, int* quantities, int productCou
         }
     }
 
-    if (!writeWarehouseToFile(warehouseFileName, warehouseProducts, warehouseStock, warehouseUnits, warehouseCount)) {
+    if (!writeWarehouseToFile(warehouseProducts, warehouseStock, warehouseUnits, warehouseCount)) {
         deallocateMemory(warehouseProducts, MAXSIZE);
         deallocateMemory(warehouseUnits, MAXSIZE);
         delete[] warehouseStock;
@@ -651,8 +640,7 @@ bool restoreProductsToWarehouse(char** products, int* quantities, int productCou
 }
 
 void saveOrderToFile(const char* orderName, const int quantity) {
-    const char* ordersFileName("Past Orders.txt");
-    ofstream ordersFile(ordersFileName, ios::app);
+    ofstream ordersFile(ORDERS_FILE, ios::app);
     if (!ordersFile.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
         return;
@@ -664,27 +652,25 @@ void saveOrderToFile(const char* orderName, const int quantity) {
 }
 
 void saveDishToFile(const char* dish, const char* price) {
-    const char* ordersFileName("Menu.txt");
-    ofstream ordersFile(ordersFileName, ios::app);
-    if (!ordersFile.is_open()) {
+    ofstream menuFile(MENU_FILE, ios::app);
+    if (!menuFile.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
         return;
     }
-    ordersFile << dish << " " << price << endl;
-    ordersFile.close();
+    menuFile << dish << " " << price << endl;
+    menuFile.close();
 
     cout << "Dish is added!" << endl;
 }
 
 void saveRecipeToFile(const char* recipe) {
-    const char* ordersFileName("Recipes.txt");
-    ofstream ordersFile(ordersFileName, ios::app);
-    if (!ordersFile.is_open()) {
+    ofstream recipesFile(RECIPES_FILE, ios::app);
+    if (!recipesFile.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
         return;
     }
-    ordersFile << recipe << endl;
-    ordersFile.close();
+    recipesFile << recipe << endl;
+    recipesFile.close();
 
     cout << "Recipe is added!" << endl;
 }
@@ -701,14 +687,13 @@ void makeOrder() {
     cin >> quantity;
     clearInputBuffer();
 
-    const char* menuFileName = "Menu.txt";
-    bool dishIsFound = findWordInFile(orderName, menuFileName);
+    bool dishIsFound = findWordInFile(orderName, MENU_FILE);
     if (!dishIsFound) {
         cout << "Error: Dish not found in the menu!" << endl;
         return;
     }
-    const char* recipeFileName = "Recipes.txt";
-    bool recipeIsFound = findWordInFile(orderName, recipeFileName);
+
+    bool recipeIsFound = findWordInFile(orderName, RECIPES_FILE);
     if (!recipeIsFound) {
         cout << "Error: Recipe not found!" << endl;
         return;
@@ -764,14 +749,12 @@ void cancelOrder() {
 }
 
 void seePastOrders() {
-    const char* pastOrders = "Past orders.txt";
-    readAndPrintFile(pastOrders);
+    readAndPrintFile(ORDERS_FILE);
 }
 
 void seePastOrdersSorted() {
     sortPastOrders();
-    const char* sortedPastOrdersFile = "Past orders sorted.txt";
-    readAndPrintFile(sortedPastOrdersFile);
+    readAndPrintFile(SORTED_ORDERS_FILE);
 }
 
 void writeOffProduct() {
@@ -781,9 +764,7 @@ void writeOffProduct() {
     cin.getline(productName, MAXSIZE);
     clearInputBuffer();
 
-    const char* warehouseFileName = "Warehouse.txt";
-
-    ifstream warehouseFile(warehouseFileName);
+    ifstream warehouseFile(WAREHOUSE_FILE);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file." << endl;
         return;
@@ -827,7 +808,7 @@ void writeOffProduct() {
     }
     productCount--;
 
-    writeWarehouseToFile(warehouseFileName, products, stock, unit, productCount);
+    writeWarehouseToFile(products, stock, unit, productCount);
 
     cout << "Product \"" << productName << "\" removed from the warehouse successfully!" << endl;
 
@@ -850,9 +831,8 @@ void stockProduct() {
     char unit[MAXSIZE];
     processWarehouseLine(productToAdd, product, quantity, unit);
 
-    const char* warehouseFileName = "Warehouse.txt";
 
-    ifstream warehouseFile(warehouseFileName);
+    ifstream warehouseFile(WAREHOUSE_FILE);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file." << endl;
         return;
@@ -886,7 +866,7 @@ void stockProduct() {
         productCount++;
     }
 
-    writeWarehouseToFile(warehouseFileName, productInWarehouse, stockInWarehouse, unitInWarehouse, productCount);
+    writeWarehouseToFile(productInWarehouse, stockInWarehouse, unitInWarehouse, productCount);
 
     cout << "Product \"" << product << "\" updated successfully in the warehouse!" << endl;
 
@@ -902,15 +882,14 @@ void seeDailyRevenue() {
     char** orders = allocateMemory(MAXSIZE);
     int* quantities = new int[MAXSIZE];
     int orderCount = 0;
-    const char* ordersFileName = "Past orders sorted.txt";
-    processPastOrderLine(orders, quantities, orderCount, ordersFileName);
+
+    processPastOrderLine(orders, quantities, orderCount);
 
     int totalRevenue = 0;
     int orderPrices[MAXSIZE];
-    const char* menuFileName = "Menu.txt";
 
     for (int i = 0; i < orderCount; i++) {
-        int price = findPriceInMenu(orders[i], menuFileName);
+        int price = findPriceInMenu(orders[i]);
         if (price < 0) {
             cout << "Warning: Could not find price for " << orders[i] << ". Skipping." << endl;
             orderPrices[i] = 0;
@@ -920,8 +899,7 @@ void seeDailyRevenue() {
         totalRevenue += orderPrices[i];
     }
 
-    const char* sortedOrdersFile = "Past orders sorted.txt";
-    ofstream revenueFile(sortedOrdersFile);
+    ofstream revenueFile(SORTED_ORDERS_FILE);
     if (!revenueFile.is_open()) {
         cout << "Error: Unable to open sorted orders file for writing!" << endl;
         deallocateMemory(orders, MAXSIZE);
@@ -936,7 +914,7 @@ void seeDailyRevenue() {
     revenueFile << "Total: " << totalRevenue << " leva" << endl;
     revenueFile.close();
 
-    readAndPrintFile(sortedOrdersFile);
+    readAndPrintFile(SORTED_ORDERS_FILE);
 
     deallocateMemory(orders, MAXSIZE);
     delete[] quantities;
@@ -953,8 +931,7 @@ void addNewItemToMenu() {
     cin.getline(price, MAXSIZE);
     clearInputBuffer();
 
-    const char* menuFileName = "Menu.txt";
-    if (findWordInFile(dish, menuFileName)) {
+    if (findWordInFile(dish, MENU_FILE)) {
         cout << "Error: This dish is already in the menu!" << endl;
         return;
     }
@@ -966,8 +943,7 @@ void addNewItemToMenu() {
     cin.getline(recipe, MAXSIZE);
     clearInputBuffer();
 
-    const char* recipeFileName = "Recipes.txt";
-    if (findWordInFile(recipe, recipeFileName)) {
+    if (findWordInFile(recipe, RECIPES_FILE)) {
         cout << "Recipe is already in the cookbook! Glad is back on menu!" << endl;
         return;
     }
@@ -987,30 +963,26 @@ void removeItemFromMenu() {
     cin.getline(dish, MAXSIZE);
     clearInputBuffer();
 
-    const char* menuFileName = "Menu.txt";
-    if (!findWordInFile(dish, menuFileName)) {
+    if (!findWordInFile(dish, MENU_FILE)) {
         cout << "Dish is not in the menu! Consider adding it!" << endl;
         return;
     }
 
-    removeLineFromFile(menuFileName, dish);
+    removeLineFromFile(MENU_FILE, dish);
     cout << "Dish '" << dish << "' successfully removed from the menu!" << endl;
 }
 
 void generateDailyRevenue(char* date) {
-    const char* sortedOrdersFile = "Past orders sorted.txt";
-    const char* revenueFile = "Revenues.txt";
- 
     cout << date << endl;
     seeDailyRevenue();
 
-    ofstream revenueOut(revenueFile, ios::app);
+    ofstream revenueOut(REVENUE_FILE, ios::app);
     if (!revenueOut.is_open()) {
         cout << "Error: Unable to open revenue file for writing!" << endl;
         return;
     }
 
-    ifstream sortedOrders(sortedOrdersFile);
+    ifstream sortedOrders(SORTED_ORDERS_FILE);
     if (!sortedOrders.is_open()) {
         cout << "Error: Unable to open sorted orders file!" << endl;
         revenueOut.close();
@@ -1022,7 +994,7 @@ void generateDailyRevenue(char* date) {
         revenueOut << line << endl;         
     }
     sortedOrders.close();
-    revenueOut << "---------------------------------" << endl;
+    revenueOut << SEPARATOR << endl;
 
     char nextDate[MAXSIZE];
     generateNextDate(date, nextDate);
@@ -1037,8 +1009,7 @@ void seeAllRevenues() {
     cin.getline(dateToFind, MAXSIZE);
     clearInputBuffer();
 
-    const char* revenueFileName = "Revenues.txt";
-    ifstream revenueFile(revenueFileName);
+    ifstream revenueFile(REVENUE_FILE);
     if (!revenueFile.is_open()) {
         cout << "Error: Unable to open revenues file!" << endl;
         return;
@@ -1067,22 +1038,7 @@ void seeAllRevenues() {
 
 void printOptionsForManager(char* date) {
     while (true) {
-        cout << "Select an option:" << endl;
-        cout << "1) See menu" << endl;
-        cout << "2) Make an order" << endl;
-        cout << "3) Cancel an order" << endl;
-        cout << "4) See past orders" << endl;
-        cout << "5) See past orders sorted" << endl;
-        cout << "6) See how much products are left" << endl;
-        cout << "7) Write-off a product" << endl;
-        cout << "8) Stock a product" << endl;
-        cout << "9) See daily revenue" << endl;
-        cout << "10) Generate a daily revenue" << endl;
-        cout << "11) See all revenues from a date" << endl;
-        cout << "12) Add a new item in the menu" << endl;
-        cout << "13) Remove an item from the menu" << endl;
-        cout << "14) See all options " << endl;
-        cout << "15) Exit" << endl;
+        cout << MANAGER_MENU_OPTIONS;
 
         int option;
         bool validOption = false;
@@ -1155,15 +1111,7 @@ void printOptionsForManager(char* date) {
 
 void printOptionsForWaiter() {
     while (true) {
-        cout << "Select an option:" << endl;
-        cout << "1) See menu" << endl;
-        cout << "2) Make an order" << endl;
-        cout << "3) Cancel an order" << endl;
-        cout << "4) See past orders" << endl;
-        cout << "5) See past orders list" << endl;
-        cout << "6) See daily revenue" << endl;
-        cout << "7) See all options" << endl;
-        cout << "8) Exit" << endl;
+        cout << WAITER_MENU_OPTIONS;
 
         int option;
         bool validOption = false;
@@ -1215,9 +1163,8 @@ void printOptionsForWaiter() {
     }
 }
 
-int main() {
+void startSoftware() {
     char role;
-    const int SIZEOFDATE = 11;
     char date[SIZEOFDATE];
     startingMessages(role, date);
     if (role == 'A' || role == 'a') {
@@ -1226,7 +1173,10 @@ int main() {
     else if (role == 'B' || role == 'b') {
         printOptionsForWaiter();
     }
+}
 
-
+int main() {
+    startSoftware();
+    
     return 0;
 }
