@@ -53,10 +53,14 @@ void copyString(char* destination, const char* source) {
     destination[i] = '\0';
 }
 
+bool isDigit(char ch) {
+    return ch >= '0' && ch <= '9';
+}
+
 void processWarehouseLine(const char* line, char* product, int& quantity, char* unit) {
     int i = 0, j = 0;
     while (line[i] != '\0') {
-        if (line[i] >= '0' && line[i] <= '9') { 
+        if (isDigit(line[i])) {
             product[j] = '\0'; 
             break;
         }
@@ -65,7 +69,7 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     product[j - 1] = '\0';
 
     quantity = 0;
-    while (line[i] >= '0' && line[i] <= '9') {
+    while (isDigit(line[i])) {
         quantity = quantity * 10 + (line[i] - '0');
         i++;
     }
@@ -93,13 +97,13 @@ void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) 
     while (ordersFile.getline(line, MAXSIZE)) {
         int i = 0, j = 0;
 
-        while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
+        while (line[i] != '\0' && !isDigit(line[i])) {
             orders[orderCount][j++] = line[i++];
         }
         orders[orderCount][j - 1] = '\0';
 
         orderQuantities[orderCount] = 0;
-        while (line[i] >= '0' && line[i] <= '9') {
+        while (isDigit(line[i])) {
             orderQuantities[orderCount] = orderQuantities[orderCount] * 10 + (line[i] - '0');
             i++;
         }
@@ -122,13 +126,13 @@ int findPriceInMenu(const char* dish) {
     while (menuFile.getline(line, MAXSIZE)) {
         int i = 0, j = 0;
 
-        while (!(line[i] >= '0' && line[i] <= '9')) {
+        while (!isDigit(line[i])) {
             menuDish[j++] = line[i++];
         }
         menuDish[j - 1] = '\0';
 
         int price = 0;
-        while (line[i] >= '0' && line[i] <= '9') {
+        while (isDigit(line[i])) {
             price = price * 10 + (line[i] - '0');
             i++;
         }
@@ -400,7 +404,7 @@ bool findWordInFile(const char* word, const char* fileName) {
     while (file.getline(line, MAXSIZE)) {
         int i = 0, j = 0;
         while (line[i] != '\0') {
-            if (line[i] >= '0' && line[i] <= '9') {
+            if (isDigit(line[i])) {
                 dishName[j] = '\0';
                 break;
             }
@@ -429,7 +433,7 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
         char dishFound[MAXSIZE];
         int i = 0, j = 0;
 
-        while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
+        while (line[i] != '\0' && !isDigit(line[i])) {
             dishFound[j++] = line[i++];
         }
         dishFound[j - 1] = '\0';
@@ -440,13 +444,13 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
 
         while (line[i] != '\0') {
             quantities[productCount] = 0;
-            while (line[i] >= '0' && line[i] <= '9') {
+            while (isDigit(line[i])) {
                 quantities[productCount] = quantities[productCount] * 10 + (line[i] - '0');
                 i++;
             }
 
             j = 0;
-            while (line[i] != '\0' && !(line[i] >= '0' && line[i] <= '9')) {
+            while (line[i] != '\0' && !isDigit(line[i])) {
                 productsFromRecipe[productCount][j++] = line[i++];
             }
             if (line[i] == '\0') {
