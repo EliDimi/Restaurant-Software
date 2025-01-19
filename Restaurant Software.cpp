@@ -301,7 +301,7 @@ void findDate(const char* revenuesFile, char* date) {
     while (file.getline(line, MAXSIZE)) {
         copyString(date, line);
     }
-
+    
     file.close();
 }
 
@@ -1217,7 +1217,8 @@ void printOptionsForWaiter() {
 
 int main() {
     char role;
-    char* date = new char[MAXSIZE];
+    const int SIZEOFDATE = 11;
+    char date[SIZEOFDATE];
     startingMessages(role, date);
     if (role == 'A' || role == 'a') {
         printOptionsForManager(date);
@@ -1225,7 +1226,7 @@ int main() {
     else if (role == 'B' || role == 'b') {
         printOptionsForWaiter();
     }
-    delete[] date;
+
 
     return 0;
 }
