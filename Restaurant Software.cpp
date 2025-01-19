@@ -213,11 +213,10 @@ bool writeWarehouseToFile(char** warehouseProducts, int* warehouseStock, char** 
     return true;
 }
 
-void swapStrings(char* str1, char* str2) {
-    char temp[MAXSIZE];
-    copyString(temp, str1);
-    copyString(str1, str2);
-    copyString(str2, temp);
+void swapPointers(char** ptr1, char** ptr2) {
+    char* temp = *ptr1;
+    *ptr1 = *ptr2;
+    *ptr2 = temp;
 }
 
 void swapIntegers(int& a, int& b) {
@@ -238,7 +237,7 @@ void bubbleSort(char** arr, int* quantities, int size) {
     for (int i = 0; i < size - 1; i++) {
         for (int j = 0; j < size - i - 1; j++) {
             if (compareStringsForSorting(arr[j], arr[j + 1]) > 0) {
-                swapStrings(arr[j], arr[j + 1]);
+                swapPointers(&arr[j], &arr[j + 1]);
                 swapIntegers(quantities[j], quantities[j + 1]);
             }
         }
