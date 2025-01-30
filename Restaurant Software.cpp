@@ -34,6 +34,11 @@ void deallocateMemory(char** matrix, int N) {
  }
 
 bool compareStrings(const char* str1, const char* str2) {
+    if (str1 == nullptr || str2 == nullptr) {
+        cout << "Error!" << endl;
+        return false;
+    }
+
     int i = 0;
     while (str1[i] != '\0' && str2[i] != '\0') {
         if (str1[i] != str2[i]) {
@@ -45,6 +50,11 @@ bool compareStrings(const char* str1, const char* str2) {
 }
 
 void copyString(char* destination, const char* source) {
+    if (destination == nullptr || source == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     int i = 0;
     while (source[i] != '\0') {
         destination[i] = source[i];
@@ -58,6 +68,11 @@ bool isDigit(char ch) {
 }
 
 void processWarehouseLine(const char* line, char* product, int& quantity, char* unit) {
+    if (line == nullptr || product == nullptr || unit == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     int i = 0, j = 0;
     while (line[i] != '\0') {
         if (isDigit(line[i])) {
@@ -86,6 +101,11 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
 }
 
 void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) {
+    if (orders == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ifstream ordersFile(ORDERS_FILE);
     if (!ordersFile.is_open()) {
         cout << "Error: Unable to open orders file!" << endl;
@@ -113,6 +133,11 @@ void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) 
 }
 
 int findPriceInMenu(const char* dish) {
+    if (dish == nullptr) {
+        cout << "Error!" << endl;
+        return -1;
+    }
+
     ifstream menuFile(MENU_FILE);
     if (!menuFile.is_open()) {
         cout << "Error: Unable to open menu file!" << endl;
@@ -148,6 +173,11 @@ int findPriceInMenu(const char* dish) {
 }
 
 bool updateOrdersFile(const char* orderName, int quantity) {
+    if (orderName == nullptr) {
+        cout << "Error!" << endl;
+        return false;
+    }
+
     char** orders = allocateMemory(MAXSIZE);
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
@@ -197,6 +227,11 @@ bool updateOrdersFile(const char* orderName, int quantity) {
 }
 
 bool writeWarehouseToFile(char** warehouseProducts, int* warehouseStock, char** warehouseUnits, int& warehouseCount) {
+    if (warehouseProducts == nullptr || warehouseUnits == nullptr) {
+        cout << "Error!" << endl;
+        return false;
+    }
+
     ofstream warehouseOut(WAREHOUSE_FILE);
     if (!warehouseOut.is_open()) {
         cout << "Error: Unable to open warehouse file for writing." << endl;
@@ -214,6 +249,11 @@ bool writeWarehouseToFile(char** warehouseProducts, int* warehouseStock, char** 
 }
 
 void swapPointers(char** ptr1, char** ptr2) {
+    if (ptr1 == nullptr || ptr2 == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     char* temp = *ptr1;
     *ptr1 = *ptr2;
     *ptr2 = temp;
@@ -226,6 +266,11 @@ void swapIntegers(int& a, int& b) {
 }
 
 int compareStringsForSorting(const char* str1, const char* str2) {
+    if (str1 == nullptr || str2 == nullptr) {
+        cout << "Error!" << endl;
+        return -1;
+    }
+
     while (*str1 && *str2 && *str1 == *str2) {
         str1++;
         str2++;
@@ -234,6 +279,11 @@ int compareStringsForSorting(const char* str1, const char* str2) {
 }
 
 void bubbleSort(char** arr, int* quantities, int size) {
+    if (arr == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     for (int i = 0; i < size - 1; i++) {
         for (int j = 0; j < size - i - 1; j++) {
             if (compareStringsForSorting(arr[j], arr[j + 1]) > 0) {
@@ -291,6 +341,11 @@ void sortPastOrders() {
 }
 
 void findDate(char* date) {
+    if (date == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ifstream file(REVENUE_FILE);
     if (!file.is_open()) {
         cout << "Error: Unable to open file: " << REVENUE_FILE << endl;
@@ -305,6 +360,11 @@ void findDate(char* date) {
 }
 
 void generateNextDate(char* date, char* nextDate) {
+    if (date == nullptr || nextDate == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     int day = 0, month = 0, year = 0;
     int i = 0;
 
@@ -393,6 +453,11 @@ void readAndPrintFile(const char* List) {
 } 
 
 bool findWordInFile(const char* word, const char* fileName) {
+    if (word == nullptr) {
+        cout << "Error!" << endl;
+        return false;
+    }
+
     ifstream file(fileName);
     if (!file.is_open()) {
         cout << "Error: Unable to open file: " << fileName << endl;
@@ -422,6 +487,11 @@ bool findWordInFile(const char* word, const char* fileName) {
 }
 
 void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, int* quantities, int& productCount) {
+    if (orderName == nullptr || productsFromRecipe == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ifstream recipeFile(RECIPES_FILE);
     if (!recipeFile.is_open()) {
         cout << "Error: Unable to open recipe file." << endl;
@@ -467,6 +537,11 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
 }
 
 bool removeProductsFromWarehouse(char** products, int* quantities, int& productCount, int quantity) {
+    if (products == nullptr) {
+        cout << "Error!" << endl;
+        return false;
+    }
+
     ifstream warehouseFile(WAREHOUSE_FILE);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file." << endl;
@@ -531,6 +606,11 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
 }
 
 void removeLineFromFile(const char* fileName, const char* searchDish) {
+    if (searchDish == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ifstream file(fileName);
     if (!file.is_open()) {
         cout << "Error: Unable to open file: " << fileName << endl;
@@ -579,6 +659,11 @@ void removeLineFromFile(const char* fileName, const char* searchDish) {
 }
 
 bool restoreProductsToWarehouse(char** products, int* quantities, int productCount, int restoreQuantity) {
+    if (products == nullptr) {
+        cout << "Error!" << endl;
+        return false;
+    }
+
     ifstream warehouseFile(WAREHOUSE_FILE);
     if (!warehouseFile.is_open()) {
         cout << "Error: Unable to open warehouse file!" << endl;
@@ -628,6 +713,11 @@ bool restoreProductsToWarehouse(char** products, int* quantities, int productCou
 }
 
 void saveOrderToFile(const char* orderName, const int quantity) {
+    if (orderName == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ofstream ordersFile(ORDERS_FILE, ios::app);
     if (!ordersFile.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
@@ -640,6 +730,11 @@ void saveOrderToFile(const char* orderName, const int quantity) {
 }
 
 void saveDishToFile(const char* dish, const char* price) {
+    if (dish == nullptr || price == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ofstream menuFile(MENU_FILE, ios::app);
     if (!menuFile.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
@@ -652,6 +747,11 @@ void saveDishToFile(const char* dish, const char* price) {
 }
 
 void saveRecipeToFile(const char* recipe) {
+    if (recipe == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     ofstream recipesFile(RECIPES_FILE, ios::app);
     if (!recipesFile.is_open()) {
         cout << "Error: Unable to open orders file for writing!" << endl;
@@ -952,6 +1052,11 @@ void removeItemFromMenu() {
 }
 
 void generateDailyRevenue(char* date) {
+    if (date == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     cout << date << endl;
     seeDailyRevenue();
 
@@ -1016,6 +1121,11 @@ void seeAllRevenues() {
 }
 
 void printOptionsForManager(char* date) {
+    if (date == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     while (true) {
         cout << MANAGER_MENU_OPTIONS;
 
@@ -1144,6 +1254,11 @@ void printOptionsForWaiter() {
 }
 
 void startingMessages(char& role, char* date) {
+    if (date == nullptr) {
+        cout << "Error!" << endl;
+        return;
+    }
+
     findDate(date);
     cout << "Welcome!" << endl;
     cout << "Today is " << date << endl;
