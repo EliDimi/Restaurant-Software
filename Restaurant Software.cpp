@@ -530,7 +530,7 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
     return true;
 }
 
-void removeLineFromFile(const char* fileName, const char* searchLine) {
+void removeLineFromFile(const char* fileName, const char* searchDish) {
     ifstream file(fileName);
     if (!file.is_open()) {
         cout << "Error: Unable to open file: " << fileName << endl;
@@ -540,14 +540,31 @@ void removeLineFromFile(const char* fileName, const char* searchLine) {
     char lines[MAXSIZE][MAXSIZE];
     int lineCount = 0;
     char line[MAXSIZE];
+    bool dishRemoved = false;
 
     while (file.getline(line, MAXSIZE)) {
-        if (!compareStrings(line, searchLine)) {
-            copyString(lines[lineCount], line);
-            lineCount++;
+        char dish[MAXSIZE];
+        int i = 0, j = 0;
+
+        while (line[i] != '\0' && !isDigit(line[i])) {
+            dish[j++] = line[i++];
         }
+        dish[j - 1] = '\0'; 
+
+        if (compareStrings(dish, searchDish)) {
+            dishRemoved = true;
+            continue; 
+        }
+
+        copyString(lines[lineCount], line);
+        lineCount++;
     }
     file.close();
+
+    if (!dishRemoved) {
+        cout << "Error: Dish not found in the file!" << endl;
+        return;
+    }
 
     ofstream outFile(fileName);
     if (!outFile.is_open()) {
@@ -559,6 +576,8 @@ void removeLineFromFile(const char* fileName, const char* searchLine) {
         outFile << lines[i] << endl;
     }
     outFile.close();
+
+    cout << "Dish '" << searchDish << "' successfully removed!" << endl;
 }
 
 bool restoreProductsToWarehouse(char** products, int* quantities, int productCount, int restoreQuantity) {
