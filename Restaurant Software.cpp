@@ -576,8 +576,6 @@ void removeLineFromFile(const char* fileName, const char* searchDish) {
         outFile << lines[i] << endl;
     }
     outFile.close();
-
-    cout << "Dish '" << searchDish << "' successfully removed!" << endl;
 }
 
 bool restoreProductsToWarehouse(char** products, int* quantities, int productCount, int restoreQuantity) {
