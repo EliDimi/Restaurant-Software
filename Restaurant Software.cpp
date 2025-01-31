@@ -18,20 +18,20 @@ void clearInputBuffer() {
 }
 
 char** allocateMemory(int N) {
-     char** matrix = new char*[N];
-     for (int i = 0; i < N; i++) {
-         matrix[i] = new char[N];
-     }
-     return matrix;
- }
+    char** matrix = new char* [N];
+    for (int i = 0; i < N; i++) {
+        matrix[i] = new char[N];
+    }
+    return matrix;
+}
 
 void deallocateMemory(char** matrix, int N) {
-     for (int i = 0; i < N; i++) {
-         delete[] matrix[i];
-     }
-     delete[] matrix;
-     matrix = nullptr;
- }
+    for (int i = 0; i < N; i++) {
+        delete[] matrix[i];
+    }
+    delete[] matrix;
+    matrix = nullptr;
+}
 
 bool compareStrings(const char* str1, const char* str2) {
     if (str1 == nullptr || str2 == nullptr) {
@@ -76,7 +76,7 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     int i = 0, j = 0;
     while (line[i] != '\0') {
         if (isDigit(line[i])) {
-            product[j] = '\0'; 
+            product[j] = '\0';
             break;
         }
         product[j++] = line[i++];
@@ -223,6 +223,8 @@ bool updateOrdersFile(const char* orderName, int quantity) {
     }
     ordersOut.close();
 
+    deallocateMemory(orders, MAXSIZE);
+    delete[] orderQuantities;
     return true;
 }
 
@@ -355,7 +357,7 @@ void findDate(char* date) {
     while (file.getline(line, MAXSIZE)) {
         copyString(date, line);
     }
-    
+
     file.close();
 }
 
@@ -450,7 +452,7 @@ void readAndPrintFile(const char* List) {
 
     delete[] fileContent;
     file.close();
-} 
+}
 
 bool findWordInFile(const char* word, const char* fileName) {
     if (word == nullptr) {
@@ -498,7 +500,7 @@ void extractRecipeIngredients(const char* orderName, char** productsFromRecipe, 
         return;
     }
 
-    char line [MAXSIZE];
+    char line[MAXSIZE];
     while (recipeFile.getline(line, MAXSIZE)) {
         char dishFound[MAXSIZE];
         int i = 0, j = 0;
@@ -570,7 +572,7 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
                     deallocateMemory(warehouseProducts, MAXSIZE);
                     deallocateMemory(warehouseUnits, MAXSIZE);
                     delete[] warehouseStock;
-                    return false; 
+                    return false;
                 }
                 break;
             }
@@ -580,7 +582,7 @@ bool removeProductsFromWarehouse(char** products, int* quantities, int& productC
             deallocateMemory(warehouseProducts, MAXSIZE);
             deallocateMemory(warehouseUnits, MAXSIZE);
             delete[] warehouseStock;
-            return false; 
+            return false;
         }
     }
 
@@ -629,11 +631,11 @@ void removeLineFromFile(const char* fileName, const char* searchDish) {
         while (line[i] != '\0' && !isDigit(line[i])) {
             dish[j++] = line[i++];
         }
-        dish[j - 1] = '\0'; 
+        dish[j - 1] = '\0';
 
         if (compareStrings(dish, searchDish)) {
             dishRemoved = true;
-            continue; 
+            continue;
         }
 
         copyString(lines[lineCount], line);
@@ -916,7 +918,7 @@ void stockProduct() {
         cout << "Error: Unable to open warehouse file." << endl;
         return;
     }
-    
+
     char** productInWarehouse = allocateMemory(MAXSIZE);
     int* stockInWarehouse = new int[MAXSIZE];
     char** unitInWarehouse = allocateMemory(MAXSIZE);
@@ -957,7 +959,7 @@ void stockProduct() {
 
 void seeDailyRevenue() {
     sortPastOrders();
-    
+
     char** orders = allocateMemory(MAXSIZE);
     int* quantities = new int[MAXSIZE];
     int orderCount = 0;
@@ -1075,7 +1077,7 @@ void generateDailyRevenue(char* date) {
 
     char line[MAXSIZE];
     while (sortedOrders.getline(line, MAXSIZE)) {
-        revenueOut << line << endl;         
+        revenueOut << line << endl;
     }
     sortedOrders.close();
     revenueOut << SEPARATOR << endl;
@@ -1084,8 +1086,15 @@ void generateDailyRevenue(char* date) {
     generateNextDate(date, nextDate);
     revenueOut << nextDate << endl;
     revenueOut.close();
+
+    ofstream clearFile(ORDERS_FILE, ios::trunc);
+    if (!clearFile.is_open()) {
+        cout << "Error: Unable to clear past orders file!" << endl;
+        return;
+    }
+    clearFile.close();
 }
- 
+
 void seeAllRevenues() {
     char dateToFind[MAXSIZE];
     cout << "From what date do ypu want to check: ";
@@ -1136,11 +1145,12 @@ void printOptionsForManager(char* date) {
             cout << "Choosing: ";
             cin >> option;
 
-            if (cin.fail()) { 
-                cin.clear(); 
+            if (cin.fail()) {
+                cin.clear();
                 cin.ignore();
                 cout << "Invalid input! Please enter a number." << endl;
-            } else if (option < 1 || option > 15) {
+            }
+            else if (option < 1 || option > 15) {
                 cout << "Invalid option! Select again!" << endl;
             }
             else {
@@ -1285,7 +1295,7 @@ void startingMessages(char& role, char* date) {
 
 void startSoftware() {
     char role;
-    char date[SIZEOFDATE];
+    char date[MAXSIZE];
     startingMessages(role, date);
     if (role == 'A' || role == 'a') {
         printOptionsForManager(date);
@@ -1297,6 +1307,6 @@ void startSoftware() {
 
 int main() {
     startSoftware();
-    
+
     return 0;
 }
