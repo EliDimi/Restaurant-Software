@@ -1,6 +1,7 @@
 # Restaurant-Software
 This is a software for managing a restaurant. 
 
+
 Formatting of a line in each file:
 1. Menu:
    Capital letter item *space* Number for price *space* Currency
