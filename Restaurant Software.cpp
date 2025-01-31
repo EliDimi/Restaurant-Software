@@ -1,3 +1,18 @@
+/**
+*
+* Solution to course project #1
+* Introduction to programming course
+* Faculty of Mathematics and Informatics of Sofia University
+* Winter semester 2024/2025
+*
+* @author Elena Dimitrova
+* @idnumber 0MI0600553
+* @compiler VS
+*
+* <file with all funcions>
+*
+*/
+
 #include <iostream>
 #include <fstream>
 #include "Constants.h"
@@ -66,6 +81,7 @@ bool isDigit(char ch) {
     return ch >= '0' && ch <= '9';
 }
 
+//Gets product name, quanity and unit
 void processWarehouseLine(const char* line, char* product, int& quantity, char* unit) {
     if (line == nullptr || product == nullptr || unit == nullptr) {
         cout << "Error!" << endl;
@@ -99,6 +115,7 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     unit[j] = '\0';
 }
 
+//Gets product name, quantity and counts the lines 
 void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount, const char* List) {
     if (orders == nullptr) {
         cout << "Error!" << endl;
