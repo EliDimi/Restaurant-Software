@@ -1,8 +1,6 @@
 #pragma once
 
 const int MAXSIZE = 100;
-const int SIZEOFDATE = 11;
-
 
 const char MENU_FILE[] = "Menu.txt";
 const char ORDERS_FILE[] = "Past orders.txt";

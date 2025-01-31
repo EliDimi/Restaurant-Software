@@ -10,4 +10,3 @@ Coca-Cola 2 leva
 Sprite 2 leva
 Beer 4 leva
 Wine 5 leva
-Apple 2leva
