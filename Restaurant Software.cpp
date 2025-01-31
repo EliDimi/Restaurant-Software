@@ -4,8 +4,7 @@
 using namespace std;
 
 void clearConsole() {
-    cout << "\033[;H"; // Moves cursor to the top left
-    cout << "\033[J"; // Clears the console
+    system("cls");
 }
 
 void clearInputBuffer() {
@@ -1097,7 +1096,7 @@ void generateDailyRevenue(char* date) {
 
 void seeAllRevenues() {
     char dateToFind[MAXSIZE];
-    cout << "From what date do ypu want to check: ";
+    cout << "From what date do you want to check: ";
     cin.ignore();
     cin.getline(dateToFind, MAXSIZE);
     clearInputBuffer();
@@ -1232,7 +1231,7 @@ void printOptionsForWaiter() {
                 validOption = true;
             }
         }
-
+        
         clearConsole();
 
         switch (option) {
