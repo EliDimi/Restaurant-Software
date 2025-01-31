@@ -99,13 +99,13 @@ void processWarehouseLine(const char* line, char* product, int& quantity, char* 
     unit[j] = '\0';
 }
 
-void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount) {
+void processPastOrderLine(char** orders, int* orderQuantities, int& orderCount, const char* List) {
     if (orders == nullptr) {
         cout << "Error!" << endl;
         return;
     }
 
-    ifstream ordersFile(ORDERS_FILE);
+    ifstream ordersFile(List);
     if (!ordersFile.is_open()) {
         cout << "Error: Unable to open orders file!" << endl;
         return;
@@ -181,7 +181,7 @@ bool updateOrdersFile(const char* orderName, int quantity) {
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    processPastOrderLine(orders, orderQuantities, orderCount);
+    processPastOrderLine(orders, orderQuantities, orderCount, ORDERS_FILE);
 
     for (int i = orderCount - 1; i >= 0; i--) {
         if (!compareStrings(orders[i], orderName)) {
@@ -300,7 +300,7 @@ void sortPastOrders() {
     int* orderQuantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    processPastOrderLine(orders, orderQuantities, orderCount);
+    processPastOrderLine(orders, orderQuantities, orderCount, ORDERS_FILE);
 
     char** sortedOrders = allocateMemory(MAXSIZE);
     int* sortedQuantities = new int[MAXSIZE];
@@ -957,13 +957,14 @@ void stockProduct() {
 }
 
 void seeDailyRevenue() {
+
     sortPastOrders();
 
     char** orders = allocateMemory(MAXSIZE);
     int* quantities = new int[MAXSIZE];
     int orderCount = 0;
 
-    processPastOrderLine(orders, quantities, orderCount);
+    processPastOrderLine(orders, quantities, orderCount, SORTED_ORDERS_FILE);
 
     int totalRevenue = 0;
     int orderPrices[MAXSIZE];
